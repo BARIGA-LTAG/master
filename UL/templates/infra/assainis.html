@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <h4>Ajouter un équipement/infrastructure d'assainissement</h4>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h4>Carte</h4>
+        <div id="map" style="width: 100%; height: 500px;"></div> 
+        <div id="accuracy-message" style="display: none;">
+            <input type="hidden" id="id_lat" name="lat">
+            <input type="hidden" id="id_lon" name="lon">
+            <input type="hidden" id="id_accuracy" name="accuracy">
+            <p>La précision estimée est <span id="accuracy-value"></span> mètres.</p>
+            <button onclick="confirmCoordinates()" class="btn btn-success">Oui</button>
+            <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var map = L.map('map').setView([6.1377337280227895, 1.2208812782937144], 13);
+
+    // 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png'
+    // 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}'
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+     // Fonction pour mettre à jour la précision
+     function updateAccuracy(accuracy) {
+        document.getElementById('accuracy-value').textContent = accuracy;
+    }
+
+    map.on('locationfound', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const accuracy = e.accuracy;
+        // Mettre à jour la précision lors de la géolocalisation
+        updateAccuracy(e.accuracy);
+
+        document.getElementById('id_lat').value = lat;
+        document.getElementById('id_lon').value = lon;
+        document.getElementById('id_accuracy').value = accuracy;
+
+        document.getElementById('accuracy-value').textContent = accuracy;
+        document.getElementById('accuracy-message').style.display = 'block';
+
+        // Supprimer les anciens cercles de précision
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Circle) {
+                layer.removeFrom(map);
+            }
+        });
+
+        // Créer un cercle de précision autour de la position actuelle
+        L.circle([lat, lon], {
+            radius: accuracy,
+            color: 'blue',
+            fillColor: '#3186cc',
+            fillOpacity: 0.2,
+        }).addTo(map).bindPopup(`Précision : ${accuracy} mètres`).openPopup();
+
+        // Créer un marqueur pour la position actuelle
+        const currentLocationMarker = L.marker([lat, lon]).addTo(map);
+        currentLocationMarker.bindPopup("Vous êtes ici").openPopup();
+    });
+
+    map.on('locationerror', function(e) {
+        alert("Impossible d'obtenir la géolocalisation.");
+    });
+
+    map.locate({ setView: true, maxZoom: 16 });
+
+    // Code pour ajouter les zones UL à la carte existante
+ 
+</script>
+
+<script>
+    function confirmCoordinates() {
+        // Soumettez le formulaire pour enregistrer les coordonnées
+        document.querySelector('form').submit();
+    }
+
+    function cancelCoordinates() {
+        // Annulez la collecte des coordonnées
+        document.getElementById('accuracy-message').style.display = 'none';
+    }
+</script>
+
+{% endblock %}
+
+

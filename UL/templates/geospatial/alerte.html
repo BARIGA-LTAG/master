@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row card-body">
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form1')">
+                <i class="fas fa-building"></i> Alerte Batiment
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form2')">
+                <i class="fas fa-lightbulb"></i> Alerte Lampadaire
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form3')">
+                <i class="fas fa-tint"></i> Alerte Point d'eau
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form4')">
+                <i class="fas fa-wifi"></i> Alerte Point Wifi
+            </button>
+        </div>
+    </div>
+    
+    <div class="row card-body">
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form5')">
+                <i class="fas fa-trash-alt"></i> Alerte Poubelle
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form6')">
+                <i class="fas fa-bed"></i> Alerte Reposoir
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form7')">
+                <i class="fas fa-tree"></i> Alerte Jardin
+            </button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" onclick="openForm('form8')">
+                <i class="fas fa-exclamation-triangle"></i> Alerte Générale
+            </button>
+        </div>
+    </div>
+    
+    <!-- Ajoutez les autres boutons pour les formulaires suivants -->
+    
+    <!-- Formulaires (initiallement cachés) -->
+    <div class="row" id="form1" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title"> Batiment</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form1 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form1">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form2" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Lampadaire</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form2 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form2">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form3" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Robinet d'eau</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form3 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form3">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form4" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Point Wifi</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form4 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form4">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form5" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Poubelle/Fosse septique </h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form5 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form5">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form6" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Reposoir</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form6 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form6">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form7" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Jardin</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form7 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form7">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="form8" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Alerte Générale</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form8 }}
+                        <button type="submit" class="btn btn-primary" name="submit_form8">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- BOOOOOOOOOOOOOOOOOOOOOOOOOM -->
+</div>
+
+<style>
+    .fade-in {
+        opacity: 1;
+        max-height: 500px; /* Ajustez la hauteur maximale selon vos besoins */
+        transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
+    }
+
+    .fade-out {
+        opacity: 0;
+        max-height: 0;
+        transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
+    }
+</style>
+
+<script>
+   function openForm(formId) {
+    // Masquer tous les formulaires
+    document.querySelectorAll('.row[id^="form"]').forEach(element => {
+        element.classList.add('fade-out');
+        element.style.display = 'none';
+    });
+
+    // Afficher le formulaire spécifié
+    const formElement = document.getElementById(formId);
+    formElement.classList.remove('fade-out');
+    formElement.classList.add('fade-in');
+    formElement.style.display = 'block';
+
+    // Stocker l'ID du formulaire actuellement affiché dans le stockage local
+    localStorage.setItem('currentForm', formId);
+}
+
+// Appeler openForm avec l'ID stocké localement lors du chargement de la page
+document.addEventListener('DOMContentLoaded', function () {
+    const currentFormId = localStorage.getItem('currentForm');
+    if (currentFormId) {
+        openForm(currentFormId);
+    }
+});
+
+</script>
+
+{% endblock %}

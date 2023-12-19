@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Poubelle/Puisare</h5>
+                    <p class="card-text"></p>
+                    <a href="{% url 'UL:assainis' %}" class="btn btn-primary">géopositionner</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">BATIMENT</h5>
+                    <p class="card-text"></p>
+                    <a href="{% url 'UL:batiment' %}" class="btn btn-primary">géopositionner</a>
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}

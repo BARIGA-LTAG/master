@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}  
+
+<style>
+    .img-custom {
+        max-width: 100%; 
+        max-height: 300px;  
+        height: auto;
+        display: block;
+        margin: 0 auto;  
+    }
+
+    .custom-column {
+        text-align: center;
+    }
+
+    .row {
+        margin-top: 20px; 
+        margin-bottom: 20px; 
+    }
+</style>
+
+<div class="container">
+    <div class="text-container">
+
+    </div>
+    <!-- <h2 class="text-center">Bienvenue sur l'Application Géospatiale de l'Université de Lomé</h2>
+    <h4 class="text-center">Explorez notre application pour découvrir les fonctionnalités géospatiales innovantes.</h4> -->
+
+    <div class="row">
+        <div class="col custom-column">  <!-- Corrected the class name to "custom-column" -->
+            <img src="{% static 'IMG/Universitepr.jpg' %}" alt="Image 1" class="img-fluid img-custom">
+        </div>
+    </div>
+</div>
+{% endblock %}

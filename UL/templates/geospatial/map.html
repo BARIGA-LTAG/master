@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h4> UL maping</h4>
+    <div id="map" style="width: 100%; height: 500px;"></div>
+    <p class="bg.danger">assurez-vous davoir une bonne precisons car les resultats sont fournit par rapport a votre position</p>
+    <p class="">l'infrastricture la plus proche est la premiere a s'afficher pour chaque categorie</p>
+    
+  
+    <form method="get">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Recherche</button>
+    </form>
+    <!-- patager ma positon -->
+    <button onclick="envoyerPositionWhatsApp()">Envoyer ma position à mon ami via WhatsApp</button>
+
+    <div id="accuracy-message" style="display: none;">
+        <input type="hidden" id="id_lat" name="lat">
+        <input type="hidden" id="id_lon" name="lon">
+        <input type="hidden" id="id_accuracy" name="accuracy">
+        La précision estimée est <span id="accuracy-value"></span> mètres. Souhaitez-vous patager votre position ?
+        <button onclick="confirmCoordinates()">Oui</button>
+        <button onclick="cancelCoordinates()">Annuler</button>
+    </div>
+    
+    <h2>Résultats de la Classe 1</h2>
+    {% for result in results1 %}
+        {{ result.nom }}
+    {% empty %}
+        Aucun résultat.
+    {% endfor %} 
+
+    <h2>Résultats de la Classe 2</h2>
+    {% for result in results2 %}
+        <p>{{ result.nom }} <a href="#" class="btn btn-primary" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a></p>
+        
+     {% empty %}
+        Aucun résultat.
+    {% endfor %}
+ 
+    <h2>Résultats de la Classe 3</h2>
+    {% for result in results3 %}
+     <p>{{ result.nom }}</p>  
+    {% empty %}
+        Aucun résultat.
+    {% endfor %}
+   
+   
+    <script>
+        var map = L.map('map').setView([6.1377337280227895, 1.2208812782937144], 13);
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+    
+        map.on('locationfound', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            const accuracy = e.accuracy;
+            // pour remplir auto les chanmp de la positions de l'utilisateur
+            document.getElementById('id_lat').value = lat;
+            document.getElementById('id_lon').value = lon;
+            document.getElementById('id_accuracy').value = accuracy;
+    
+            document.getElementById('accuracy-value').textContent = accuracy;
+            document.getElementById('accuracy-message').style.display = 'block';
+    
+            // Supprimer les anciens cercles de précision
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Circle) {
+                    layer.removeFrom(map);
+                }
+            });
+    
+            // Créer un cercle de précision autour de la position actuelle
+            L.circle([lat, lon], {
+                radius: accuracy,
+                color: 'yellow',
+                fillColor: '#3186cc',
+                fillOpacity: 0.2,
+            }).addTo(map).bindPopup(`Précision : ${accuracy} mètres`).openPopup();
+    
+            // Créer un marqueur pour la position actuelle
+            const currentLocationMarker = L.marker([lat, lon]).addTo(map);
+            currentLocationMarker.bindPopup("Vous êtes ici").openPopup();
+        });
+    
+        map.on('locationerror', function(e) {
+        const errorMessage = "Impossible d'obtenir la géolocalisation. Assurez-vous d'autoriser l'accès à la localisation et réessayez.";
+        document.getElementById('accuracy-message').innerHTML = `<div class="alert alert-danger">${errorMessage}</div>`;
+        });
+    
+        map.locate({ setView: true, maxZoom: 16 });
+    </script>
+    
+         <!-- coordonner a comparer avec les coordone que renvoi le formulaire de requete de recherche -->
+    <script>
+        function envoyerPositionWhatsApp() {
+            const lat = document.getElementById('id_lat').value;
+            const lon = document.getElementById('id_lon').value;
+            
+            const url = `https://api.whatsapp.com/send?text=Ma%20position%20:%20https://maps.google.com/maps?q=${lat},${lon}`;
+            window.location.href = url;
+        }
+    </script>
+    
+
+     <script>
+        {% for result in results2 %}
+            var lat = {{ result.get_lat_as_string }};
+            var lon = {{ result.get_lon_as_string }};
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("{{ result.nom }}")
+                .bindTooltip("{{ result.nom }}")
+                .openPopup();
+        {% endfor %}
+
+        // fonction pour aller vers l'infrastricure en questions
+        function goToLocation(lt, ln) {
+        const url = `https://maps.google.com/maps?q=${lt},${ln}`;
+        window.open(url, '_blank');
+        }
+
+        {% for result in results3 %}
+        var lat = {{ result.get_lat_as_string }};
+        var lon = {{ result.get_lon_as_string }};
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup("{{ result.nom }}")
+            .bindTooltip("{{ result.nom }}")
+            .openPopup();
+        {% endfor %}
+    </script>
+
+    <script>
+        function confirmCoordinates() {
+            // Soumettez le formulaire pour enregistrer les coordonnées
+            document.querySelector('form').submit();
+        }
+    
+        function cancelCoordinates() {
+            // Annulez la collecte des coordonnées
+            document.getElementById('accuracy-message').style.display = 'none';
+        }
+    </script>
+
+{% endblock %}

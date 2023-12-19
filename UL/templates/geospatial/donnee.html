@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content%}
+<!-- <a href="{% url 'telecharger_geojson' %}">Télécharger les zones au format GeoJSON</a> -->
+<!-- <a href="{% url 'telecharger_excel' %}">Télécharger les zones au format Excel</a> -->
+<a href="{% url 'telecharger_geopackage' %}">Télécharger les zones au format Geopackage</a>
+
+
+{% endblock %}
