@@ -1,15 +1,13 @@
+import os
 from shapely.wkt import loads
 import json
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from django.shortcuts import render
 from ..formulaire import geomaprechercheForm
 from ..models import *  
 from geopy.distance import geodesic
 from django.http import FileResponse
 import geopandas as gpd
-import csv
+import csv,pandas
 from django.http import HttpResponse
 #A.objects.all().update(lat=None, lon=None)
 
@@ -48,55 +46,16 @@ def geomaprecherche(request):
 #APPEL DES CLASS
 zones = Zone_UL.objects.all()
 
-
-def telecharger_donnees(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="zones.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow(['nom', 'aire', 'superficie', 'lon', 'lat', 'limite'])
-
-    zones = Zone_UL.objects.all()
-    for zone in zones:
-        writer.writerow([zone.nom, zone.aire, zone.superficie, zone.lon, zone.lat, zone.limite])
-
-    return response
-
-
 #STATISTIQUE
 ### statistique
+
 def statistique(request,*args,**kwargs):
-    df_zones = pd.DataFrame(list(zones.values()))
-    sns.scatterplot(data=df_zones, x='nom', y='aire')
-    plt.show()
     return render(request,"geospatial/statistique.html")
 
-#TELECHARGER MULTIFORMA
-# Créer une liste de dictionnaires avec les attributs et la géométrie au format GeoJSON
-zones = Zone_UL.objects.all()
-# 
-def telecharger_excel(request): ################# VALIDE
-    # Créez un DataFrame avec les attributs
-    df = pd.DataFrame(list(zones.values()))
+def telecharger_donnees(request,*args,**kwargs):
+    return render(request,"geospatial/donnee.html")
 
-    # Créez un fichier Excel
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="zones.xlsx"'
-    df.to_excel(response, index=False)
-
-    return response
-
-# def telecharger_geopackage(request):
-#     zones = Zone_UL.objects.all()
-#     gdf = gpd.GeoDataFrame(zones, geometry=geometrie, crs='EPSG:32631')
-
-#     response = HttpResponse(content_type='application/geopackage')
-#     response['Content-Disposition'] = 'attachment; filename="zones.gpkg"'
-#     gdf.to_file(response, layer='zones', driver='GPKG')
-
-#     return response
-
-def telecharger_geopackage(request):
+def telecharger_data(request):
     geometrie_zone = [loads(zone.geometrie.wkt) for zone in zones]
     les_zones = []
     for zone in zones:
@@ -108,11 +67,10 @@ def telecharger_geopackage(request):
         une_zone = {
             'nom': zone.nom,
             'aire': zone.aire,
-            'superficie': zone.superficie,
             'lon': zone.lon,
             'lat': zone.lat,
             'limite': zone.limite,
-            'geometrie': geometrie
+            # 'geometrie': geometrie
         }
         les_zones.append(une_zone)
 
@@ -120,11 +78,79 @@ def telecharger_geopackage(request):
     gdf = gpd.GeoDataFrame(les_zones, geometry=geometrie_zone, crs='EPSG:32631')
 
     # Enregistrez le GeoDataFrame au format GeoPackage
-    gdf.to_file('zone_ul.gpkg', driver='GPKG')
+    module_directory = os.path.dirname(__file__)
+    csv_path = os.path.join(module_directory, '..', 'static', 'gis', 'zone_ul.csv')
 
-    # Servez le fichier comme réponse
-    with open('zone_ul.gpkg', 'rb') as file:
-        response = FileResponse(file)
-        response['Content-Disposition'] = 'attachment; filename=zone_ul.gpkg'
-        print(response.content)
-        return response
+    # Enregistrez le GeoDataFrame au format CSV
+    gdf.to_csv(csv_path, index=False,encoding='latin')
+
+    response = FileResponse(open(csv_path, 'rb'))
+    response['Content-Disposition'] = 'attachment; filename=zone_ul.csv'
+
+    return response
+def telecharger_data_geojson(request):
+    geometrie_zone = [loads(zone.geometrie.wkt) for zone in zones]
+    les_zones = []
+    for zone in zones:
+        if zone.geometrie and zone.geometrie.geojson:
+            geometrie = json.loads(zone.geometrie.geojson)
+        else:
+            geometrie = None
+    
+        une_zone = {
+            'nom': zone.nom,
+            'aire': zone.aire,
+            'lon': zone.lon,
+            'lat': zone.lat,
+            'limite': zone.limite,
+            # 'geometrie': geometrie
+        }
+        les_zones.append(une_zone)
+
+    # Créer un GeoDataFrame à partir de la liste de dictionnaires
+    gdf = gpd.GeoDataFrame(les_zones, geometry=geometrie_zone, crs='EPSG:32631')
+    # Supposons que votre GeoDataFrame soit stocké dans la variable gdf
+    type_index = type(gdf.index)
+    print(f"Type d'index : {type_index}")
+    print(gdf.index)
+
+    # Enregistrez le GeoDataFrame au format GeoJSON
+    module_directory = os.path.dirname(__file__)
+    geojson_path = os.path.join(module_directory, '..', 'static', 'gis', 'zone_ul.geojson')
+    gdf.to_file(geojson_path, driver='GeoJSON', index='ignore')
+
+    response = FileResponse(open(geojson_path, 'rb'))
+    response['Content-Disposition'] = 'attachment; filename=zone_ul.geojson'
+
+    return response
+
+def telecharger_data_gpkg(request):
+    geometrie_zone = [loads(zone.geometrie.wkt) for zone in zones]
+    les_zones = []
+    for zone in zones:
+        if zone.geometrie and zone.geometrie.geojson:
+            geometrie = json.loads(zone.geometrie.geojson)
+        else:
+            geometrie = None
+    
+        une_zone = {
+            'nom': zone.nom,
+            'aire': zone.aire,
+            'lon': zone.lon,
+            'lat': zone.lat,
+            'limite': zone.limite,
+            # 'geometrie': geometrie
+        }
+        les_zones.append(une_zone)
+
+    # Créer un GeoDataFrame à partir de la liste de dictionnaires
+    gdf = gpd.GeoDataFrame(les_zones, geometry=geometrie_zone, crs='EPSG:32631')
+    # Enregistrez le GeoDataFrame au format GeoJSON
+    module_directory = os.path.dirname(__file__)
+    gpkg_path = os.path.join(module_directory, '..', 'static', 'gis', 'zone_ul.gpkg')
+    gdf.to_file(gpkg_path, driver='GPKG', index='ignore')
+
+    response = FileResponse(open(gpkg_path, 'rb'))
+    response['Content-Disposition'] = 'attachment; filename=zone_ul.gpkg'
+
+    return response

@@ -18,7 +18,8 @@
             <input type="hidden" id="id_lon" name="lon">
             <input type="hidden" id="id_accuracy" name="accuracy">
             <p>La précision estimée est <span id="accuracy-value"></span> mètres.</p>
-            <button onclick="confirmCoordinates()" class="btn btn-success">Oui</button>
+            <button onclick="confirmCoordinates(event)" class="btn btn-success">Oui</button>
+
             <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
         </div>
     </div>
@@ -86,7 +87,8 @@
 <script>
     function confirmCoordinates() {
         // Soumettez le formulaire pour enregistrer les coordonnées
-        document.querySelector('form').submit();
+        event.preventDefault();
+        //document.querySelector('form').submit();
     }
 
     function cancelCoordinates() {

@@ -1,5 +1,6 @@
 from json import loads
 import json
+from django.http import JsonResponse
 from django.shortcuts import render
 import pyproj
 from UL.formulaire import AlerteGeneraleForm, AlerteJardinForm, AlerteLampadaireForm, AlertePointEauForm, AlertePoubelleFosseForm, AlerteReposoirForm, AlerteWifiForm, AssainissementForm, BatimentForm,AlerteBatimentForm
@@ -89,7 +90,7 @@ def formassainisement(request,*args,**kwargs):
             "geometrie": json.loads(geometry_4326.geojson),
             "nom": zone.nom,
             "aire": zone.aire,}
-    zones_geojson.append(champs)
+        zones_geojson.append(champs)
 
     zones_geojson = json.dumps(zones_geojson)
 
@@ -105,3 +106,4 @@ def formbatiment(request,*args,**kwargs):
     else:
         form = BatimentForm()
     return render(request, 'infra/batiment.html',{'form':form})
+

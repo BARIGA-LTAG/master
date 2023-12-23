@@ -95,10 +95,8 @@ class BatimentForm(forms.ModelForm):
     class Meta:
         model = Batiment
         fields = '__all__'  
-        widgets = {
-            'geometrie': forms.OSMWidget(attrs={'map_width': 800, 'map_height': 500}),
-        }
- 
+       # exclude =['geometrie','aire']
+        
    
 class VoirieForm(forms.ModelForm):
      class Meta:

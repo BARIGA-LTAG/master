@@ -1,9 +1,23 @@
 {% extends 'base.html' %}
 
-{% block content%}
-<!-- <a href="{% url 'telecharger_geojson' %}">Télécharger les zones au format GeoJSON</a> -->
-<!-- <a href="{% url 'telecharger_excel' %}">Télécharger les zones au format Excel</a> -->
-<a href="{% url 'telecharger_geopackage' %}">Télécharger les zones au format Geopackage</a>
-
-
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 border">
+            <h3>Télécharger au format csv</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_csv' %}" download="zone_ul.csv">Télécharger zone_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <h3>Télécharger au format geojson</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_json' %}" download="zone_ul.geojson">Télécharger zone_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <h3>Télécharger au format geopackage</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_gpkg' %}" download="zone_ul.gpkg">Télécharger zone_ul.gpkg</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

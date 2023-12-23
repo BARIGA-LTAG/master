@@ -107,5 +107,5 @@ class AlerteReposoirGIS(admin.ModelAdmin):
 admin.site.register(AlerteReposoir,AlerteReposoirGIS)
 
 class AlerteGeneraleGIS(admin.ModelAdmin):
-    list_display=('disfonction','SOSMessage','date_alerte')
+    list_display=('disfonction','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteGenerale,AlerteGeneraleGIS)

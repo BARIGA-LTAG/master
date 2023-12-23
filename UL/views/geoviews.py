@@ -8,6 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from shapely.geometry import Point
 from shapely.wkt import loads
 import folium
+from folium import plugins
 import pyproj
 from UL.formulaire import AssainissementForm
 #Create your views here.
@@ -34,11 +35,10 @@ for zone in zones:
     zone_attributs = {
         'nom': zone.nom,
         'aire': zone.aire,
-        'superficie': zone.superficie,
         'lon': zone.lon,
         'lat': zone.lat,
         'limite': zone.limite,
-        'geometrie': json.loads(zone.geometrie.geojson)
+        #'geometrie': json.loads(zone.geometrie.geojson)
     }
     zones_attributs.append(zone_attributs)
     
@@ -61,6 +61,8 @@ for ass in assainissements:
 
 def carte(request,*args,**kwargs):
     gdf_zone=gpd.GeoDataFrame(zones_attributs,geometry=geometrie_zone, crs='EPSG:32631')
+
+    
     
     m=gdf_zone.explore(
     column="nom",  # make choropleth based on "POP2010" column
@@ -73,19 +75,19 @@ def carte(request,*args,**kwargs):
     name="zonage",  # name of the layer in the map
     )
           #assainissem
-    gdf_ass=gpd.GeoDataFrame(ass_atrs,geometry=geometrie_ass, crs='EPSG:32631')
-    gdf_ass.explore(
-    m=m,
-    color="black",  # use red color on all points
-    marker_kwds=dict(radius=5, fill=True),  # make marker radius 10px with fill
-    tooltip="nom",  # show "name" column in the tooltip
-    tooltip_kwds=dict(labels=True),  # do not show column label in the tooltip
-    name="assainissement",  # name of the layer in the map
-    )
-
-    folium.TileLayer("CartoDB positron", show=False).add_to(
-    m
-)  # use folium to add alternative tiles
+    # gdf_ass=gpd.GeoDataFrame(ass_atrs,geometry=geometrie_ass, crs='EPSG:32631')
+    # gdf_ass.explore(
+    # m=m,
+    # color="black",  # use red color on all points
+    # marker_kwds=dict(radius=5, fill=True),  # make marker radius 10px with fill
+    # tooltip="nom",  # show "name" column in the tooltip
+    # tooltip_kwds=dict(labels=True),  # do not show column label in the tooltip
+    # name="assainissement",  # name of the layer in the map
+    # )
+    # Ajouter une couche de tuiles Google Satellite
+ 
+    folium.TileLayer("CartoDB positron", show=False).add_to(m) 
+    
     folium.LayerControl().add_to(m)  # use folium to add layer control
 
     m  # show map
@@ -93,21 +95,23 @@ def carte(request,*args,**kwargs):
     context={'carte_html':carte_html}
     return render(request, 'geospatial/carte.html',context)
 
-# path = r"C:\Users\julien\Desktop\geoinformatique\geo_data_science\geopandas_UL\donne\ASSAINIS.geojson"
 
+
+# path = r"C:\Users\julien\Desktop\geoinformatique\geo_data_science\geopandas_pro\donne\zonage.geojson"
+# assain=gpd.read_file(path)
+# assain.head()
 # def remove_z_dimension(geometry):
 #      return Point(geometry.x, geometry.y)
 
-# assain=gpd.read_file(path)
-# assain['geometry'] = assain['geometry'].apply(remove_z_dimension)
+#assain['geometry'] = assain['geometry'].apply(remove_z_dimension)
 # for index, row in assain.iterrows():
-#     # print(row)
-#     ass=Assainissement(
-#        nom=row['assainissement'],
-#         # lat=row['y'],
-#         # lon=row['x'],
-#         type=row['type'],
+#     #print(index)
+#     ass=Zone_UL(
+#        nom=row['Domaines_U'],
+#     #     # lat=row['y'],
+#     #     # lon=row['x'],
+#     #     type=row['type'],
 #         geometrie=GEOSGeometry(row['geometry'].wkt,srid=32631),  
-#     )
+#      )
 #     ass.save()
-#Assainissement.objects.all().delete()
+# Assainissement.objects.all().delete()

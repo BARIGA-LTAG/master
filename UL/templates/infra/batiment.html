@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6">
-        <h4>Ajouter un équipement/infrastructure d'assainissement</h4>
+        <h4>Ajouter un équipement/infrastructure BATIMENT</h4>
         <form method="POST">
             {% csrf_token %}
             {{ form }}
@@ -18,7 +18,8 @@
             <input type="hidden" id="id_lon" name="lon">
             <input type="hidden" id="id_accuracy" name="accuracy">
             <p>La précision estimée est <span id="accuracy-value"></span> mètres.</p>
-            <button onclick="confirmCoordinates()" class="btn btn-success">Oui</button>
+            <button onclick="confirmCoordinates(event)" class="btn btn-success">Oui</button>
+
             <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
         </div>
     </div>
@@ -26,9 +27,10 @@
 
 <script>
     var map = L.map('map').setView([6.1377337280227895, 1.2208812782937144], 13);
-    var coordonneesListe = [];
 
-    // ... (rest of your existing code)
+    // 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png'
+    // 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}'
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
@@ -45,8 +47,8 @@
         // Mettre à jour la précision lors de la géolocalisation
         updateAccuracy(e.accuracy);
 
-        // document.getElementById('id_lat').value = lat;
-        // document.getElementById('id_lon').value = lon;
+        document.getElementById('id_lat').value = lat;
+        document.getElementById('id_lon').value = lon;
         document.getElementById('id_accuracy').value = accuracy;
 
         document.getElementById('accuracy-value').textContent = accuracy;
@@ -78,22 +80,23 @@
 
     map.locate({ setView: true, maxZoom: 16 });
 
+    // Code pour ajouter les zones UL à la carte existante
+ 
+</script>
 
+<script>
     function confirmCoordinates() {
-    // Ajoute les coordonnées à la liste
-    coordonneesListe.push({
-        lat: parseFloat(document.getElementById('id_lat').value),
-        lon: parseFloat(document.getElementById('id_lon').value),
-        accuracy: parseFloat(document.getElementById('id_accuracy').value)
-    });
+        // Soumettez le formulaire pour enregistrer les coordonnées
+        event.preventDefault();
+        //document.querySelector('form').submit();
+    }
 
-    // Affiche le contenu actuel de la liste dans la console
-    alert("Coordonnées actuelles dans la liste :", coordonneesListe);
-
-    // Soumettez le formulaire pour enregistrer les coordonnées
-    document.querySelector('form').submit();
-}
-
+    function cancelCoordinates() {
+        // Annulez la collecte des coordonnées
+        document.getElementById('accuracy-message').style.display = 'none';
+    }
 </script>
 
 {% endblock %}
+
+

@@ -1,51 +1,60 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h4> UL maping</h4>
-    <div id="map" style="width: 100%; height: 500px;"></div>
-    <p class="bg.danger">assurez-vous davoir une bonne precisons car les resultats sont fournit par rapport a votre position</p>
-    <p class="">l'infrastricture la plus proche est la premiere a s'afficher pour chaque categorie</p>
-    
-  
-    <form method="get">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit">Recherche</button>
-    </form>
-    <!-- patager ma positon -->
-    <button onclick="envoyerPositionWhatsApp()">Envoyer ma position à mon ami via WhatsApp</button>
+<div class="container mt-4">
+    <h4 class="mb-4">UL Mapping</h4>
 
-    <div id="accuracy-message" style="display: none;">
-        <input type="hidden" id="id_lat" name="lat">
-        <input type="hidden" id="id_lon" name="lon">
-        <input type="hidden" id="id_accuracy" name="accuracy">
-        La précision estimée est <span id="accuracy-value"></span> mètres. Souhaitez-vous patager votre position ?
-        <button onclick="confirmCoordinates()">Oui</button>
-        <button onclick="cancelCoordinates()">Annuler</button>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div id="map" style="width: 100%; height: 400px;"></div>
+            <p class="bg-danger text-white p-2 mt-2">Assurez-vous d'avoir une bonne précision, car les résultats sont fournis par rapport à votre position.</p>
+            <p class="mb-4">L'infrastructure la plus proche est la première à s'afficher pour chaque catégorie.</p>
+        </div>
+        <div class="col-md-6">
+            <form method="get" class="mb-3">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit" class="btn btn-primary">Recherche</button>
+            </form>
+    
+            <!-- Partager ma position -->
+            <button onclick="envoyerPositionWhatsApp()" class="btn btn-success mb-3">Envoyer ma position à mon ami via WhatsApp</button>
+
+            <div id="accuracy-message" style="display: none;" class="mb-3">
+                <input type="hidden" id="id_lat" name="lat">
+                <input type="hidden" id="id_lon" name="lon">
+                <input type="hidden" id="id_accuracy" name="accuracy">
+                <p class="mb-2">La précision estimée est <span id="accuracy-value"></span> mètres. Souhaitez-vous partager votre position ?</p>
+                <button onclick="confirmCoordinates()" class="btn btn-primary">Oui</button>
+                <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
+            </div>
+        </div>
     </div>
     
-    <h2>Résultats de la Classe 1</h2>
+    <h2 class="mt-4">Résultats de la Classe 1</h2>
     {% for result in results1 %}
         {{ result.nom }}
     {% empty %}
-        Aucun résultat.
+        <p class="text-muted">Aucun résultat.</p>
     {% endfor %} 
 
     <h2>Résultats de la Classe 2</h2>
     {% for result in results2 %}
-        <p>{{ result.nom }} <a href="#" class="btn btn-primary" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a></p>
-        
-     {% empty %}
-        Aucun résultat.
+        <div class="mb-3">
+            <p class="mb-0">{{ result.nom }}</p>
+            <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a>
+        </div>
+    {% empty %}
+        <p class="text-muted">Aucun résultat.</p>
     {% endfor %}
  
     <h2>Résultats de la Classe 3</h2>
     {% for result in results3 %}
-     <p>{{ result.nom }}</p>  
+        <p class="mb-0">{{ result.nom }}</p>  
     {% empty %}
-        Aucun résultat.
+        <p class="text-muted">Aucun résultat.</p>
     {% endfor %}
-   
+</div>
    
     <script>
         var map = L.map('map').setView([6.1377337280227895, 1.2208812782937144], 13);

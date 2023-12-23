@@ -62,10 +62,10 @@ class Limite(models.Model):
 
 class Zone_UL(models.Model):
     nom = models.CharField(max_length=50)
-    aire = models.IntegerField(default=0)
+    aire = models.FloatField(default=0)
     lon = models.FloatField(blank=True,null=True)
     lat = models.FloatField(blank=True,null=True)
-    limite=models.ForeignKey(Limite,on_delete=models.PROTECT) # CLEE
+    limite=models.ForeignKey(Limite,on_delete=models.PROTECT,default=Limite,null=True) 
     geometrie = models.MultiPolygonField(srid=32631)
     info_modifier_le = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -677,7 +677,7 @@ class Batiment(models.Model):
     image=models.ImageField(blank=True,null=True)
     zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
     limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    geometrie=models.MultiPolygonField(srid=32631)
+    geometrie=models.MultiPolygonField(srid=32631,blank=True,null=True)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
 #class BatimentAdministratif(Batiment):
@@ -706,6 +706,7 @@ class Batiment(models.Model):
     cuisine=models.BooleanField(default=False)
     eau=models.BooleanField(default=True)
     info_modifier_le = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
         return self.nom
     

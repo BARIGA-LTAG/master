@@ -1,6 +1,6 @@
 from UL.views.geoviews import  carte, analyse
 from UL.views.formsviews import formassainisement,collecteur, formbatiment,faire_alerte
-from UL.views.basicviews import statistique,geomaprecherche, telecharger_donnees,telecharger_geopackage
+from UL.views.basicviews import statistique,geomaprecherche,telecharger_donnees,telecharger_data,telecharger_data_geojson,telecharger_data_gpkg
 from django.contrib import admin
 from django.urls import path
 app_name='UL'
@@ -14,9 +14,10 @@ urlpatterns = [
     path('collecte/',collecteur, name="collecte"),
     path('collecte_assainis/',formassainisement, name="assainis"),
     path('collecte_bat/',formbatiment, name="batiment"),
-    # path('telecharger_data/',telecharger_donnees, name='telecharger'),
-    path('telecharger-geojson/', telecharger_geopackage, name='telecharger'),
-    
+    path('telecharger/',telecharger_donnees, name='telecharger'),
+    path('telecharger_csv/', telecharger_data, name='telecharger_csv'),
+    path('telecharger_json/', telecharger_data_geojson, name='telecharger_json'),
+    path('telecharger_gpkg/', telecharger_data_gpkg, name='telecharger_gpkg'),
 
   ]
 
