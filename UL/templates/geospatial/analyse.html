@@ -1,41 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h3>analyse spatiale</h3>
-<div class="container">
-    <div class="row m-2 p-2">
-        <div class="col col-md-12">
-            {{analyse_html|safe}}
+<h3 class="text-center">Analyse spatiale</h3>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Visualisez </h5>
+                        <p class="card-text">Quelque operations d'analyse deja faites.
+                            profitez deja en analysant les relation enntre les differents objets ainsi que leurs repartition dans l'espace du campus UL
+                        </p>
+                        <a href="{% url 'UL:analyse1' %}" class="btn btn-primary">Ouvrir</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">analusez et visualisez</h5>
+                        <p class="card-text">Faites des analyses spatiles par des algorithmes disponible.
+                            ce sont des algorithmes basics mais tres puisantes et utile si lon sait les utiliser pour extraires des informations
+                        </p>
+                        <a href="{% url 'UL:analyse2' %}" class="btn btn-primary">Ouvrir</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-
-
-
 {% endblock %}
-
-<!--
-    <div id="map" style="height: 500px; width: 70%; float: left;"></div>
-
-    <div id="sidebar" style="height: 500px; width: 30%; float: left; padding: 10px;">
-        <!-- Zone pour les opérations d'analyse spatiale -->
-        <h2>Opérations d'Analyse Spatiale</h2>
-        <label for="operation">Choisissez une opération :</label>
-        <select id="operation">
-            <option value="buffer">Tampon</option>
-            <option value="center">Centre</option>
-            <option value="centerOfMass">Centre de Masse</option>
-            <option value="centroid">Centroïde</option>
-            <!-- Ajoutez d'autres opérations au besoin -->
-        </select>
-
-        <label for="layer">Choisissez une couche :</label>
-        <select id="layer">
-            <!-- Remplissez dynamiquement cette liste avec les couches disponibles depuis Django -->
-        </select>
-
-        <button onclick="performSpatialAnalysis()">Effectuer l'analyse spatiale</button>
-    </div>
-
-    <script src="static/java_turf.js"></script>
--->

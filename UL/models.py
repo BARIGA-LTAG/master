@@ -1,6 +1,9 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.gdal.libgdal import lgdal
+from utilisateurs.models import Profile
+from django.contrib.auth.models import User
+
 ###################################
 import geopandas as gpd
 from pyproj import Proj, transform
@@ -799,58 +802,59 @@ CHOICES = (
         ('choix3', 'Sonorisation'),
         ('choix3', 'Table/Banc'),
     )
+
 class AlerteBatiment(models.Model):
     disfonction=models.BooleanField(default=False)
     lesPennes= MultiSelectField(choices=CHOICES,max_length=300)
     SOSMessage=models.TextField(max_length=300)
     batiment=models.ForeignKey(Batiment,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
    
 class AlerteLampadaire(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     lampadaire=models.ForeignKey(Lampadaire,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlertePointEau(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     point_eau=models.ForeignKey(PointEau,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlerteWifi(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     wifi=models.ForeignKey(Telecomminication,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlertePoubelleFosse(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     poubellefosse=models.ForeignKey(Assainissement,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlerteJardin(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     verdure=models.ForeignKey(EspaceVert,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlerteReposoir(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     repos=models.ForeignKey(Reposoir,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
 
 class AlerteGenerale(models.Model):
     disfonction=models.BooleanField(default=False)
     SOSMessage=models.TextField(max_length=300)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.CharField(max_length=70)
-    #general=models.OneToOneField(Gestionaire,on_delete=models.SET_NULL)## je creer un groupe gestionaire
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)

@@ -2,6 +2,7 @@
 from django.contrib.gis.admin import GISModelAdmin
 from django.contrib.gis import admin
 from .models import *
+
 #########################################
 admin.site.site_title = ("MON-CAMPUS")
 admin.site.site_header = ("MON-CAMPUS")
@@ -77,33 +78,34 @@ admin.site.register(Camera,CameraGIS)
 class VoirieGIS(GISModelAdmin):
     list_display=('nom','lat','lon','largeur','longueur','adresse','lampadaire','Paneaux','geometrie')
 admin.site.register(Voirie,VoirieGIS)
-
+##############################################################################
+#alerte
 class AlerteBatimentGIS(admin.ModelAdmin):
-    list_display=('batiment','disfonction','lesPennes','SOSMessage','date_alerte')
+    list_display=('batiment','disfonction','lesPennes','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteBatiment,AlerteBatimentGIS)
 
 class AlerteLampadaireGIS(admin.ModelAdmin):
-    list_display=("lampadaire",'disfonction','SOSMessage','date_alerte')
+    list_display=("lampadaire",'disfonction','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteLampadaire,AlerteLampadaireGIS)
 
 class AlertePointEauGIS(admin.ModelAdmin):
-    list_display=('disfonction','SOSMessage','date_alerte')
+    list_display=('point_eau','disfonction','SOSMessage','date_alerte')
 admin.site.register(AlertePointEau,AlertePointEauGIS)
 
 class AlerteWifiGIS(admin.ModelAdmin):
-    list_display=('disfonction','SOSMessage','date_alerte')
+    list_display=('wifi','disfonction','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteWifi,AlerteWifiGIS)
 
 class AlertePoubelleFosseGIS(admin.ModelAdmin):
-    list_display=('disfonction','poubellefosse','SOSMessage','date_alerte')
+    list_display=('poubellefosse','disfonction','poubellefosse','SOSMessage','date_alerte','auteur')
 admin.site.register(AlertePoubelleFosse,AlertePoubelleFosseGIS)
 
 class AlerteJardinGIS(admin.ModelAdmin):
-    list_display=('disfonction','SOSMessage','date_alerte')
+    list_display=('verdure','disfonction','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteJardin,AlerteJardinGIS)
 
 class AlerteReposoirGIS(admin.ModelAdmin):
-    list_display=('disfonction','SOSMessage','date_alerte')
+    list_display=('repos','disfonction','SOSMessage','date_alerte','auteur')
 admin.site.register(AlerteReposoir,AlerteReposoirGIS)
 
 class AlerteGeneraleGIS(admin.ModelAdmin):

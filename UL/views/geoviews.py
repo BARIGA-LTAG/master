@@ -10,8 +10,11 @@ import folium
 from folium import plugins
 #Create your views here.
 
-def alerte(request,*args,**kwargs):
-    return render(request,"geospatial/alerte.html")
+def analyse(request,*args,**kwargs):
+    return render(request,"geospatial/analyse.html")
+
+def analyse_2(request,*args,**kwargs):
+    return render(request,"geospatial/analyse2.html")
 
 #CARTOGRAPHIE MAP
 kiosques = Kiosque.objects.all()
@@ -115,40 +118,36 @@ def carte(request, *args, **kwargs):
     # Ajouter une couche de tuiles Google Satellite
     folium.TileLayer("CartoDB positron", show=False).add_to(m)
     folium.LayerControl().add_to(m)  # use folium to add layer control
-
     carte_html = m._repr_html_()
     context = {'carte_html': carte_html}
     return render(request, 'geospatial/carte.html', context)
 
 #FAIRE DES ANALYSE SPATIAL AU COMPLET
-def analyse(request,*args,**kwargs):
+def analyse_1(request,*args,**kwargs):
     m=gdf_zone.explore(
     column="nom",  
     scheme="naturalbreaks",  
-    legend=True,  
-    k=10,  
-    tooltip=False,  
-    popup=True ,
-    legend_kwds=dict(colorbar=False),  
     name="zonage",  
     )
-          #assainissem
-    # gdf_ass.explore(
-    # m=m,
-    # color="black",  # use red color on all points
-    # marker_kwds=dict(radius=5, fill=True),  # make marker radius 10px with fill
-    # tooltip="nom",  # show "name" column in the tooltip
-    # tooltip_kwds=dict(labels=True),  # do not show column label in the tooltip
-    # name="assainissement",  # name of the layer in the map
-    # )
-    # Ajouter une couche de tuiles Google Satellite
- 
+   
+    gdf_pt_eau.explore(
+    m=m,
+    color="black",  
+    name="assainissement",  
+    )
+
+    gdf_ass.explore(
+    m=m,
+    color="blue",  
+    name="robinet d'eau",  
+    )
+   
     folium.TileLayer("CartoDB positron", show=False).add_to(m) 
     folium.LayerControl().add_to(m)  # use folium to add layer control
-    m  # show map
+    m  
     analyse_html = m._repr_html_()
     context={'analyse_html':analyse_html}
-    return render(request,"geospatial/analyse.html",context)
+    return render(request,"geospatial/analyse1.html",context)
 
 path = r"C:\Users\julien\Desktop\geoinformatique\geo_data_science\geopandas_pro\donne\ASSAINIS.geojson"
 assain= gpd.read_file(path)

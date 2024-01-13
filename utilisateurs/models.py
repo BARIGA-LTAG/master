@@ -19,7 +19,7 @@ class Profile(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
     bio=models.CharField(max_length=100,blank=True)
     photo=models.ImageField(upload_to=renommer_image,blank=True,null=True)
-    type_profile=models.CharField(max_length=111,choices=TYPE_USER,default=Etudiant)
+    type_profile=models.CharField(max_length=66,choices=TYPE_USER,default=Etudiant)
     def __str__(self):
         return self.user.username 
     

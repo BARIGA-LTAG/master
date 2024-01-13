@@ -1,4 +1,4 @@
-from UL.views.geoviews import  carte, analyse
+from UL.views.geoviews import  carte, analyse,analyse_1,analyse_2
 from UL.views.formsviews import formassainisement,collecteur, formbatiment,faire_alerte
 from UL.views.basicviews import statistique,geomaprecherche,telecharger_donnees,telecharger_data,telecharger_data_geojson,telecharger_data_gpkg
 from django.contrib import admin
@@ -7,8 +7,9 @@ app_name='UL'
 urlpatterns = [
     path('georecherche/', geomaprecherche, name='map'),
     path('alerte/', faire_alerte, name="alerte"), 
-    # path('map/',map, name="map"), 
     path('analyse/', analyse, name="analyse"), 
+    path('analyse_py/', analyse_1, name="analyse1"), 
+    path('analyse_js/', analyse_2, name="analyse2"), 
     path('statistique/', statistique, name="statistique"), 
     path('carte/', carte, name="carte"),  
     path('collecte/',collecteur, name="collecte"),
