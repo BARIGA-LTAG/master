@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::32631" } },
+"features": [
+{ "type": "Feature", "properties": { "nom": "passerelle 1", "longitude": null, "latitude": null, "fonctionnel": true, "secteur": null, "image": null, "date_creation": null, "zone": "Espace administratif et pédagogique 2", "limite": "limite UL" }, "geometry": { "type": "LineString", "coordinates": [ [ 302527.629781014402397, 682789.145044832024723 ], [ 302552.751131725031883, 682803.132709701196291 ], [ 302554.824057134916075, 682800.173876929911785 ], [ 302529.467238928598817, 682786.205112169263884 ], [ 302527.629781014402397, 682789.145044832024723 ] ] } },
+{ "type": "Feature", "properties": { "nom": "passerelle 2", "longitude": null, "latitude": null, "fonctionnel": true, "secteur": null, "image": null, "date_creation": null, "zone": "Aires sportives 1", "limite": "limite UL" }, "geometry": { "type": "LineString", "coordinates": [ [ 302749.4313674607547, 682607.26733562129084 ], [ 302754.331255232042167, 682614.984658861067146 ], [ 302761.886879141617101, 682631.317607950419188 ], [ 302764.866013940190896, 682639.392224821960554 ] ] } }
+]
+}

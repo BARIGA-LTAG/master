@@ -1,0 +1,11 @@
+nom,longitude,latitude,fonctionnel,secteur,type,batiment,parking,date_instal,zone,limite,date_collecte,agent_collecteur,info_modifier_le,geometry
+station  1,1.212246,6.180975,True,Campus Sud,RGB,,,,Sciences de la Santé,limite UL,2024-11-02 14:17:11,NATEMA Osée,2024-11-02 14:17:11,POINT (302184.9531108135 683542.3835302321)
+station  2,1.21247,6.180814,True,Campus Sud,RGB,,,,Sciences de la Santé,limite UL,2024-11-02 14:17:11,NATEMA Osée,2024-11-02 14:17:11,POINT (302209.70569970785 683524.5185514282)
+station  3,1.212224,6.181131,True,Campus Sud,RGB,,,,Sciences de la Santé,limite UL,2024-11-02 14:17:11,NATEMA Osée,2024-11-02 14:17:11,POINT (302182.59475331823 683559.6213785475)
+station  4,1.212186,6.180826,True,Campus Sud,RGB,,,,Sciences de la Santé,limite UL,2024-11-02 14:17:11,NATEMA Osée,2024-11-02 14:17:11,POINT (302178.26662937825 683525.9447283022)
+station  5,1.213458,6.173657,True,Campus Sud,RGB,,,,Espace administratif et pédagogique 1,limite UL,2024-11-02 14:17:11,DOGOMANGUE Germaine ,2024-11-02 14:17:11,POINT (302316.40740668954 682732.539507017)
+station  6,1.212987,6.173828,True,Campus Sud,RGB,,,,Espace administratif et pédagogique 1,limite UL,2024-11-02 14:17:11,DOGOMANGUE Germaine ,2024-11-02 14:17:11,POINT (302264.2638187411 682751.7002628021)
+station  7,1.21334,6.173697,True,Campus Sud,RGB,,,,Espace administratif et pédagogique 1,limite UL,2024-11-02 14:17:11,DOGOMANGUE Germaine ,2024-11-02 14:17:11,POINT (302303.32430600026 682737.0072744583)
+station  8,1.214138,6.173278,True,Campus Sud,RGB,,,,Espace administratif et pédagogique 1,limite UL,2024-11-02 14:17:11,DOGOMANGUE ,2024-11-02 14:17:11,POINT (302391.53413493687 682690.4450358243)
+station  9,1.214162,6.173283,True,Campus Sud,RGB,,,,Espace administratif et pédagogique 1,limite UL,2024-11-02 14:17:11,DOGOMANGUE ,2024-11-02 14:17:11,POINT (302394.10935204977 682690.9922645668)
+station  0,1.21249,6.180524,True,Campus Sud,RGB,,,,Sciences de la Santé,limite UL,2024-11-02 14:17:11,NATEMA Osée,2024-11-02 14:17:11,POINT (302211.77601536433 683492.3765057876)

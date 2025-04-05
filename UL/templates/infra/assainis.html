@@ -1,42 +1,35 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-6">
-        <h4>Ajouter un équipement/infrastructure d'assainissement</h4>
+    <div class="col-md-4">
+        <h4>Coordonnées</h4>
+        <div id="map" style="width: 100%; height: 500px;"></div>
+        <div id="accuracy-message" style="display: none;">
+            <p>La précision estimée est <span id="accuracy-value"></span> mètres.</p>
+            <button onclick="confirmCoordinates()" class="btn btn-success">Confirmer</button>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <h4>Ajouter Une Poubelle</h4>
         <form method="POST">
             {% csrf_token %}
-            {{ form }}
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <h4>Carte</h4>
-        <div id="map" style="width: 100%; height: 500px;"></div> 
-        <div id="accuracy-message" style="display: none;">
-            <input type="hidden" id="id_lat" name="lat">
-            <input type="hidden" id="id_lon" name="lon">
-            <input type="hidden" id="id_accuracy" name="accuracy">
-            <p>La précision estimée est <span id="accuracy-value"></span> mètres.</p>
-            <button onclick="confirmCoordinates(event)" class="btn btn-success">Oui</button>
-
-            <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
-        </div>
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">Sauvegarder </button>
+        </form><br>
     </div>
 </div>
 
 <script>
     var map = L.map('map').setView([6.1377337280227895, 1.2208812782937144], 13);
 
-    // 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png'
-    // 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}'
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
 
-     // Fonction pour mettre à jour la précision
-     function updateAccuracy(accuracy) {
+    function updateAccuracy(accuracy) {
         document.getElementById('accuracy-value').textContent = accuracy;
     }
 
@@ -44,24 +37,30 @@
         const lat = e.latlng.lat;
         const lon = e.latlng.lng;
         const accuracy = e.accuracy;
-        // Mettre à jour la précision lors de la géolocalisation
-        updateAccuracy(e.accuracy);
 
-        document.getElementById('id_lat').value = lat;
-        document.getElementById('id_lon').value = lon;
-        document.getElementById('id_accuracy').value = accuracy;
+        updateFormFields(lat, lon, accuracy);
 
-        document.getElementById('accuracy-value').textContent = accuracy;
+        resetMapLayers();
+
+        addLocationMarker(lat, lon, accuracy);
+    });
+
+    function updateFormFields(lat, lon, accuracy) {
+        document.getElementById('id_latitude').value = lat;
+        document.getElementById('id_longitude').value = lon;
+        document.getElementById('accuracy-value').textContent = accuracy + ' m';
         document.getElementById('accuracy-message').style.display = 'block';
+    }
 
-        // Supprimer les anciens cercles de précision
-        map.eachLayer(function (layer) {
-            if (layer instanceof L.Circle) {
-                layer.removeFrom(map);
+    function resetMapLayers() {
+        map.eachLayer(function(layer) {
+            if (layer instanceof L.Circle || layer instanceof L.Marker) {
+                map.removeLayer(layer);
             }
         });
+    }
 
-        // Créer un cercle de précision autour de la position actuelle
+    function addLocationMarker(lat, lon, accuracy) {
         L.circle([lat, lon], {
             radius: accuracy,
             color: 'blue',
@@ -69,10 +68,8 @@
             fillOpacity: 0.2,
         }).addTo(map).bindPopup(`Précision : ${accuracy} mètres`).openPopup();
 
-        // Créer un marqueur pour la position actuelle
-        const currentLocationMarker = L.marker([lat, lon]).addTo(map);
-        currentLocationMarker.bindPopup("Vous êtes ici").openPopup();
-    });
+        L.marker([lat, lon]).addTo(map).bindPopup("Vous êtes ici").openPopup();
+    }
 
     map.on('locationerror', function(e) {
         alert("Impossible d'obtenir la géolocalisation.");
@@ -81,22 +78,33 @@
     map.locate({ setView: true, maxZoom: 16 });
 
     // Code pour ajouter les zones UL à la carte existante
- 
+
 </script>
 
 <script>
     function confirmCoordinates() {
-        // Soumettez le formulaire pour enregistrer les coordonnées
-        event.preventDefault();
-        //document.querySelector('form').submit();
+        // Autoriser la soumission du formulaire
+        document.getElementById('accuracy-message').style.display = 'none';
+        alert("Coordonnées confirmées. Vous pouvez maintenant sauvegarder le formulaire.");
     }
 
-    function cancelCoordinates() {
-        // Annulez la collecte des coordonnées
-        document.getElementById('accuracy-message').style.display = 'none';
-    }
+
+
+    const latitudeField = document.querySelector('#id_latitude');
+    const longitudeField = document.querySelector('#id_longitude');
+
+    map.on('locationfound', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const accuracy = e.accuracy;
+
+        updateAccuracy(accuracy);
+
+        latitudeField.value = lat;
+        longitudeField.value = lon;
+    });
 </script>
 
+
+
 {% endblock %}
-
-

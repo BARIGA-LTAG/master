@@ -1,53 +1,57 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.gdal.libgdal import lgdal
-from utilisateurs.models import Profile
 from django.contrib.auth.models import User
-
-###################################
+from utilisateurs.models import Profile
 import geopandas as gpd
 from pyproj import Proj, transform
 
+class Polyg_Lat_Lon():
+    def get_lat_as_str(self):
+        return str(self.latitude).replace(',', '.')
+    def get_lon_as_str(self):
+        return str(self.longitude).replace(',', '.')
+    
 class CodeLatLonGeom():
     def lat_lon_par_geometrie(self, *args, **kwargs):
-        """Mettre à jour les coordonnées lat et lon à partir de la géométrie"""
+        """Mettre à jour les coordonnées latitude et longitude à partir de la géométrie"""
         # Définir les systèmes de coordonnées
         utm = Proj(proj="utm", zone=31, ellps="WGS84")
         wgs84 = Proj(proj="latlong", datum="WGS84")
-        if self.geometrie and self.lat is None and self.lon is None:
+        if self.geometrie and self.latitude is None and self.longitude is None:
             #conversion par pyproj
-            self.lon, self.lat = transform(utm, wgs84,self.geometrie.x, self.geometrie.y)
+            self.longitude, self.latitude = transform(utm, wgs84,self.geometrie.x, self.geometrie.y)
             super().save(*args, **kwargs) 
-   
+
     def ajout_geometrie_par_lat_lon(self):
-        """Met à jour le champ geometrie à partir des champs lat et lon."""
-        if self.lat is not None and self.lon is not None:
+        """Met à jour le champ geometrie à partir des champs latitude et longitude."""
+        if self.latitude is not None and self.longitude is not None and self.geometrie is None:
             # Convertit les coordonnées de WGS 84 à EPSG 32631
-            pnt = Point(self.lon, self.lat, srid=4326)
+            pnt = Point(float(self.longitude), float(self.latitude), srid=4326)
             self.geometrie = pnt.transform(32631, clone=True)
             super().save()  # Enregistre les modifications
  # Utilisez la méthode save pour enregistrer les modifications et appeler ajout_geometrie_par_lat_lon
    # save en fonction du cas
     def save(self, *args, **kwargs):
-        if self.lat is None and self.lon is None:
+        if self.latitude is None and self.longitude is None:
             self.lat_lon_par_geometrie(*args, **kwargs)
         else:
             self.ajout_geometrie_par_lat_lon()
         super().save(*args, **kwargs)
-# les deux fonctions suivant sapplique a lat et lon si necessaire
+# les deux fonctions suivant sapplique a latitude et longitude si necessaire
     def get_lat_as_string(self):
-        return str(self.lat).replace(',', '.')
+        return str(self.latitude).replace(',', '.')
 
     def get_lon_as_string(self):
-        return str(self.lon).replace(',', '.')
+        return str(self.longitude).replace(',', '.')
 
-class Limite(models.Model):
+class LimiteGeographique(models.Model):
     nom = models.CharField(max_length=50)
     aire = models.FloatField(default=0)
-    lon = models.FloatField(blank=True,null=True)
-    lat = models.FloatField(blank=True,null=True)
-    geometrie = models.PolygonField(srid=32631)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    geometrie = models.MultiPolygonField(srid=32631)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
 
@@ -58,19 +62,37 @@ class Limite(models.Model):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
 
-class Zone_UL(models.Model):
+class Cloture(models.Model):
+    nom = models.CharField(max_length=30)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    longueur= models.DecimalField(max_digits=15, decimal_places=2,null=True)
+    hauteur= models.DecimalField(max_digits=15, decimal_places=2,null=True)
+    geometrie = models.MultiLineStringField(srid=32631)
+    def __str__(self):
+        return self.nom
+    
+    def save(self, *args, **kwargs):
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
+        super().save(*args, **kwargs)
+
+class Zone(models.Model):
     nom = models.CharField(max_length=50)
+    theme = models.CharField(max_length=60,null=True)
     aire = models.FloatField(default=0)
-    lon = models.FloatField(blank=True,null=True)
-    lat = models.FloatField(blank=True,null=True)
-    limite=models.ForeignKey(Limite,on_delete=models.PROTECT,default=Limite,null=True) 
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True,blank=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True) 
     geometrie = models.MultiPolygonField(srid=32631)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
     
@@ -82,218 +104,275 @@ class Zone_UL(models.Model):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
     
 CAMP=(
-        ('NORD', ('Campus Nord')),
-        ('SUD', ('Campus Sud')),
+        ('Campus Nord', ('Campus Nord')),
+        ('Campus Sud', ('Campus Sud')),
     )  
-TYPES_A=(
-        ('PBL', ('Poubele')),
-        ('FOS', ('Fosse septique')),
-    )
-class Assainissement(CodeLatLonGeom,models.Model):
+
+class Fosseseptique(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    type=models.CharField(choices=TYPES_A)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     fonctionnel=models.BooleanField(default=True)
-    secteur=models.CharField(choices=CAMP,blank=True,null=True)
-    precision=models.TextField(max_length=300,blank=True,null=True)
+    secteur=models.CharField(choices=CAMP,blank=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE 
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(blank=True,null=True,srid=32631)
-    accuracy = models.FloatField(blank=True, null=True)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False) #nouveau
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)#nouveau
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
     class Meta:
-        verbose_name="Assainissement"
-        verbose_name_plural="Assainissements"
+        verbose_name="Fosse septique"
+        verbose_name_plural="Fosses septiques"
 
+class Poubelle(CodeLatLonGeom,models.Model):
+    nom=models.CharField(max_length=50)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7,null=True)
+    fonctionnel=models.BooleanField(default=True)
+    secteur=models.CharField(choices=CAMP,blank=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
+    image=models.ImageField(blank=True,null=True)
+    date_creation=models.DateField(blank=True,null=True)
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    geometrie=models.PointField(blank=True,null=True,srid=32631)
+    date_collecte=models.DateTimeField(auto_now_add=True, editable=False) #nouveau
+    agent_collecteur=models.CharField(max_length=50,blank=True, null=True)#nouveau
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
+    def __str__(self):
+        return self.nom
     
+    class Meta:
+        verbose_name="Poubelle"
+        verbose_name_plural="Poubelles"    
+
+class Passerelle(models.Model):
+    nom = models.CharField(max_length=50)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    geometrie = models.LineStringField(srid=32631)
+    fonctionnel=models.BooleanField(default=True)
+    secteur=models.CharField(choices=CAMP,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
+    image=models.ImageField(blank=True,null=True)
+    date_creation=models.DateField(blank=True,null=True)
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    def __str__(self):
+        return self.nom
+    
+    def save(self, *args, **kwargs):
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
+        super().save(*args, **kwargs)
+        
+    class Meta:
+        verbose_name="Passerelle"
+        verbose_name_plural="Passerelles"
 USAGE=(
-        ('COM', ('Commercial')),
-        ('SANT', ('Sanitaire')),
-        ('SOS', ('Sociale')),
-        ('PED', ('Pédagogique')),
-        ('CUL', ('Culturelle')),
+        ('Commercial', ('Commercial')),
+        ('Sanitaire', ('Sanitaire')),
+        ('Sociale', ('Sociale')),
+        ('Pédagogique', ('Pédagogique')),
+        ('Culturelle', ('Culturelle')),
     )
+
 class Kiosque(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     usage=models.CharField(choices=USAGE)
     fonctionnel=models.BooleanField(default=True)
     secteur=models.CharField(choices=CAMP)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
     date_creation=models.DateField(blank=True,null=True)
     image=models.ImageField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
-
+    
     class Meta:
         verbose_name="Kiosque"
         verbose_name_plural="Kiosques"
 
-
 LAMP=(
-        ('CEET', ('Energie Hydrolique')),
-        ('SOLAR', ('Energie solaire')),
+        ('Energie Hydrolique', ('Energie Hydrolique')),
+        ('Energie solaire', ('Energie solaire')),
     ) 
-PROP=(
-        ('CEET', ('CEET')),
-        ('SOLAR', ('Solaire')),
-    ) 
-class Lampadaire(CodeLatLonGeom,models.Model):
-    nom=models.CharField(max_length=50)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
-    type=models.CharField(choices=PROP)
+
+class ToiletteIsole(CodeLatLonGeom,models.Model):
+    nom = models.CharField(max_length=50)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    geometrie = models.PointField(srid=32631)
     fonctionnel=models.BooleanField(default=True)
-    energie=models.CharField(choices=LAMP,max_length=7)
-    secteur=models.CharField(choices=CAMP,max_length=11)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    secteur=models.CharField(choices=CAMP,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
+    image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    loisir = models.ForeignKey('Loisir', on_delete=models.SET_NULL,blank=True,null=True,related_name="lamp_loisir")# CLEE # CLEE
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    route = models.ForeignKey('Voirie', on_delete=models.SET_NULL,blank=True,null=True,related_name="lamp_eau")# CLEE
-    plan_eau = models.ForeignKey('PlanEau', on_delete=models.SET_NULL,blank=True,related_name="lamp_plan_eau",null=True)# CLEE
-    espace_vert = models.ForeignKey('EspaceVert', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
-    batiment = models.ForeignKey('Batiment', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,default=1,null=True)
+    date_collecte=models.DateTimeField(auto_now_add=True, editable=False, null=True)
+    agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
+    def __str__(self):
+        return self.nom
+     
+    class Meta:
+        verbose_name="Toilette Isole"
+        verbose_name_plural="Toilette Isoles"
+ 
+class Eclairage(CodeLatLonGeom,models.Model):
+    nom=models.CharField(max_length=50)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    fonctionnel=models.BooleanField(default=True)
+    energie=models.CharField(choices=LAMP,max_length=30)
+    secteur=models.CharField(choices=CAMP,max_length=18)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
+    date_creation=models.DateField(blank=True,null=True)
+    loisir = models.ForeignKey('AireLoisir', on_delete=models.SET_NULL,blank=True,null=True,related_name="lamp_loisir")# CLEE # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    route = models.ForeignKey('Voirie', on_delete=models.SET_NULL,blank=True,null=True,related_name="lamp_route")# CLEE
+    plan_eau = models.ForeignKey('BassinEau', on_delete=models.SET_NULL,blank=True,related_name="lamp_plan_eau",null=True)# CLEE
+    espace_vert = models.ForeignKey('TrameVerte', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    batiment = models.ForeignKey('Batis', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
     
     class Meta:
-        verbose_name="Lampadaire"
-        verbose_name_plural="Lampadaires"
+        verbose_name="Eclairage"
+        verbose_name_plural="Eclairages"
 
-ROL=(
-        ('PUB', ('Publicitaire')),
-        ('DIRC', ('Directionel')),
-        ('SENS', ('Sensibilisation')),
+PTYPE=(
+        ('Danger', ('Danger')),
+        ('Obligation', ('Obligation')),
+        ('Interdiction', ('Interdiction')),
+        ('indication', ('indication')),
     ) 
 
-TYPP=(
-        ('ROUT', ('Routier')),
-        ('INFO', ('Informationel')),
+PCAT=(
+        ('Routier', ('Routier')),
+        ('Informationel', ('Informationel')),
     ) 
 
 FORM=(
-        ('CRC', ('Cercle')),
-        ('CAR', ('Carré')),
-        ('REC', ('Rectangle')),
-        ('TRI', ('Triangle')),
-        ('HEX', ('Hec/Hex/gone')),
+        ('Cercle', ('Cercle')),
+        ('Carré', ('Carré')),
+        ('Rectangle', ('Rectangle')),
+        ('Triangle', ('Triangle')),
+        ('Hec/Hex/gone', ('Hec/Hex/gone')),
     ) 
-class Paneau(CodeLatLonGeom,models.Model):
+class Panneau(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=40)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
-    type=models.CharField(choices=TYPP)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    categorie=models.CharField(choices=PCAT)
+    type=models.CharField(choices=PTYPE)
     forme=models.CharField(choices=FORM)
+    couleur=models.CharField(max_length=40,null=True,blank=True)
     fonctionnel=models.BooleanField(default=True)
-    role=models.CharField(choices=ROL)
     secteur=models.CharField(choices=CAMP)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
     route=models.ForeignKey('Voirie',on_delete=models.SET_NULL,blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    patking = models.ForeignKey('Parking', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    patking = models.ForeignKey('AireStationnement', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
     
     class Meta:
-        verbose_name="Paneau"
-        verbose_name_plural="Paneaux"
+        verbose_name="Panneau"
+        verbose_name_plural="Panneaux"
 EAU=(
-        ('FOR', ('Forage')),
-        ('TDE', ('Tde')),
+        ('Forage', ('Forage')),
+        ('Tde', ('Tde')),
     ) 
 class PointEau(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=40)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
-    type=models.CharField(choices=EAU)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    source=models.CharField(choices=EAU)
     fonctionnel=models.BooleanField(default=True)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    espace_vert = models.ForeignKey('EspaceVert', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
-    batiment = models.ForeignKey('Batiment', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    espace_vert = models.ForeignKey('TrameVerte', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    batiment = models.ForeignKey('Batis', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
-    
+
     class Meta:
         verbose_name="Point d'eau"
         verbose_name_plural="Points d'eaux"
 CAT=(
-        ('BAN', ('Banc')),
-        ('TABBAN', ('Table banc')),
-        ('BAN_C', ('Banc couvert')),
-        ('TABBAN_C', ('Table banc couvert')),
+        ('Banc', ('Banc')),
+        ('Table banc', ('Table banc')),
+        ('Banc couvert', ('Banc couvert')),
+        ('Table banc couvert', ('Table banc couvert')),
     ) 
 MAT=(
-        ('BOI', ('Bois')),
-        ('BETON', ('Béton')),
+        ('Bois', ('Bois')),
+        ('Béton', ('Béton')),
     ) 
 class Reposoir(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=40)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(choices=CAT)
     materiel=models.CharField(choices=MAT)
-    place=models.IntegerField()
+    nombe_place=models.IntegerField()
     fonctionnel=models.BooleanField(default=True)
     toiture=models.BooleanField(default=False)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    espace_vert = models.ForeignKey('EspaceVert', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    aire_repos = models.ForeignKey('AireRepos', on_delete=models.SET_NULL,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    espace_vert = models.ForeignKey('TrameVerte', on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
@@ -302,36 +381,35 @@ class Reposoir(CodeLatLonGeom,models.Model):
         verbose_name_plural="Reposoirs"
 
 PTEL=(
-        ('UL', ('Université de Lomé')),
-        ('MOOV', ('Moov')),
-        ('BANK', ('Banque')),
-        ('GOUV', ('République Togolaise')),
-        ('TGCOM', ('TogoCom')),
+        ('Université de Lomé', ('Université de Lomé')),
+        ('Moov', ('Moov')),
+        ('Banque', ('Banque')),
+        ('République Togolaise', ('République Togolaise')),
+        ('TogoCom', ('TogoCom')),
     )
 TYP_TEL=(
-        ('AS', ('Antenne Securité')),
-        ('AR', ('Antenne réseau')),
-        ('RAD', ('Antenne Radio')),
-        ('wf', ('Wifi')),
-    )
-class Telecomminication(CodeLatLonGeom,models.Model):
+        ('Antenne Securité', ('Antenne Securité')),
+        ('Antenne réseau', ('Antenne réseau')),
+        ('Antenne Radio', ('Antenne Radio' )),
+        ('Antenne Wifi', ('Antenne Wifi')),
+    )  
+class Telecommunication(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=40)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(choices=TYP_TEL)
     fonctionnel=models.BooleanField(default=True)
-    precision=models.TextField(max_length=300,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
     secteur=models.CharField(choices=CAMP)
-    propriete=models.CharField(choices=PTEL)
+    proprietaire=models.CharField(choices=PTEL)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
@@ -340,26 +418,25 @@ class Telecomminication(CodeLatLonGeom,models.Model):
         verbose_name_plural="Telecommunications"
 
 METEO=(
-        ('SYNOP', ('Station Synoptique')),
-        ('MANUAL', ('Antenne .....')),
+        ('Station Synoptique', ('Station Synoptique')),
+        ('Antenne Manuelle', ('Antenne Manuelle')),
     )
-class Meteo(CodeLatLonGeom,models.Model):
+class StationMeteo(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(choices=METEO) # a faire apres
     fonctionnel=models.BooleanField(default=True)
-    precision=models.TextField(max_length=300)
+    commentaire=models.TextField(max_length=300,null=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
@@ -368,33 +445,32 @@ class Meteo(CodeLatLonGeom,models.Model):
         verbose_name_plural="Stations météos"
 
 ARBR2=(
-        ('NAT', ('Arbre Fruitier')),
-        ('REBOI', ('Arbre Bois')),
+        ('Arbre Fruitier', ('Arbre Fruitier')),
+        ('Arbre Bois', ('Arbre Bois')),
     )
 ARBR1=(
-        ('NAT', ('Arbre naturel')),
-        ('REBOI', ('Arbre reboisé')),
+        ('Arbre naturel', ('Arbre naturel')),
+        ('Arbre reboisé', ('Arbre reboisé')),
     )
 class ArbreIsole(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
     espece=models.CharField(max_length=80,blank=True, null=True)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(choices=ARBR1)
     hauteur=models.FloatField(blank=True, null=True)
     diametre=models.FloatField(blank=True, null=True)
-    precision=models.TextField(max_length=300)
+    commentaire=models.TextField(max_length=300,null=True)
     secteur=models.CharField(choices=CAMP)
     nature=models.CharField(choices=ARBR2)
     image=models.ImageField(blank=True, null=True)
     annee_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
@@ -402,118 +478,121 @@ class ArbreIsole(CodeLatLonGeom,models.Model):
         verbose_name="Arbre isolé"
         verbose_name_plural="Arbres isolés"
 
-    
 LOIS1=(
-        ('SPOR', ('Sport')),
-        ('SPECTACL', ('Evenement Culturel')),
+        ('Sport', ('Sport')),
+        ('Evenement Culturel', ('Evenement Culturel')),
     )
 LOIS2=(
-        ('B1', ('Footbal')),
-        ('B2', ('Bascketbaal')),
-        ('B3', ('Voleyball')),
-        ('B4', ('Tenis')),
-        ('D', ('Dance')),
-        ('AUDI', ('Auditerium')),
+        ('Footbal', ('Footbal')),
+        ('Bascketball', ('Bascketball')),
+        ('Voleyball', ('Voleyball')),
+        ('Tenis', ('Tenis')),
+        ('Dance', ('Dance')),
+        ('Auditerium', ('Auditerium')),
     )
-class Loisir(models.Model):
+class AireLoisir(models.Model):
     nom = models.CharField(max_length=50)
-    categorie = models.CharField(max_length=10,choices=LOIS1)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    categorie = models.CharField(max_length=50,choices=LOIS1)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type_usage=models.CharField(choices=LOIS2)
     aire= models.FloatField(default=0)
-    precision=models.TextField(max_length=300,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.MultiPolygonField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     
     def __str__(self):
         return self.nom
     
-    class Meta:
-        verbose_name="Espace loisir"
-        verbose_name_plural="Espaces loisirs"
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
 
+    class Meta:
+        verbose_name=" Aire de Loisir"
+        verbose_name_plural="Aires de loisirs"
 VERT=(
-        ('V.NAT', ('Vegetation naturel')),
-        ('V.REB', ('Vegetation reboisé')),
-        ('V.AMG', ('Espace vert aménagé')),
-        ('BROU/C', ('Brousaille/Champs')),
-        ('V.EXPERT', ('Vegetation expérimentale')),
+        ('Aire Forestiére Naturelles Existante', ('Aire Forestiére Naturelles Existante')),
+        ('Aire Forestiére Naturelles Reboisé', ('Aire Forestiére Naturelles Reboisé')),
+        ('Aire Forestiére de Redéployement Reboisé', ('Aire Forestiére de Redéployement Reboisé')),
+        ('Aire Forestiére de Redéployement Non reboisée', ('Aire Forestiére de Redéployement Non Reboisée')),
+        ('Espace vert aménagé', ('Espace vert Aménagé')),
+        ('Espace vert Non aménagé', ('Espace vert Non aménagé')),
+        ('Ceinture Verte Non Aménagée', ('Ceinture Verte Non Aménagée')),
+        ('Parc Forestier Reboisé', ('Parc Forestier Reboisé')),
+        ('Parc Forestier Non Reboisé', ('Parc Forestier Non Reboisé')),
+        ("Stricture d'Acueil Non Amenagée", ("Stricture d'Acueil Non Amenagée")),
+        ('Jardin Botanique', ('Jardin Botanique (Végétation Experimentale)')),
+        ('Autre Aire de Redéployement', ('Autre Aire de Redéployement')),
     )
-class EspaceVert(models.Model):
+class TrameVerte(models.Model):
     nom = models.CharField(max_length=50)
-    type = models.CharField(max_length=10,choices=VERT)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    categorie = models.CharField(max_length=60,choices=VERT)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     aire= models.FloatField(default=0)
-    precision=models.TextField(max_length=300,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
     date_creation=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    batiment = models.OneToOneField('Batiment', on_delete=models.SET_NULL,blank=True,related_name="bat_jardin",null=True)# CLEE
-    lampe = models.ForeignKey(Lampadaire, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    batiment = models.OneToOneField('Batis', on_delete=models.SET_NULL,blank=True,related_name="bat_jardin",null=True)# CLEE
+    lampe = models.ForeignKey(Eclairage, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.MultiPolygonField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     
     def __str__(self):
         return self.nom
     
-    class Meta:
-        verbose_name="Espace vert"
-        verbose_name_plural="Espaces verts"
-
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
+    
+    
+    class Meta:
+        verbose_name="Trame Verte"
 
 class ArbreReboise(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
     espece=models.CharField(max_length=80,blank=True,null=True)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    date_reboise= models.DateTimeField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(default="Arbre Reboisé")
     hauteur=models.FloatField(blank=True,null=True)
     diametre=models.FloatField(blank=True,null=True)
-    precision=models.TextField(max_length=300)
+    commentaire=models.TextField(max_length=300,null=True)
     secteur=models.CharField(choices=CAMP)
     nature=models.CharField(choices=ARBR2)
-    image=models.ImageField()
     annee_reboise=models.DateField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
-    zone_plantation = models.ForeignKey(EspaceVert, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    zone_plantation = models.ForeignKey(TrameVerte, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True, null=True)
     def __str__(self):
         return self.nom
     
@@ -522,14 +601,13 @@ class ArbreReboise(CodeLatLonGeom,models.Model):
         verbose_name_plural="Arbres Reboisés"
 
 PARK=(
-        ('CYCL', ('Cycliste')),
-        ('AUTO', ('Automobile')),
+        ('Moto/Cyclo', ('Moto/Cyclo')),
+        ('Automobile', ('Automobile')),
     )
-class Parking(models.Model):
+class AireStationnement(Polyg_Lat_Lon,models.Model):
     nom = models.CharField(max_length=50)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     type=models.CharField(choices=PARK)
     aire= models.FloatField(default=0)
     camera=models.BooleanField(default=True)
@@ -537,94 +615,126 @@ class Parking(models.Model):
     agent_securite=models.BooleanField(default=True)
     lampadaire=models.BooleanField(default=True)
     date_creation=models.DateTimeField(blank=True, null=True)
-    precision=models.TextField(max_length=300,blank=True,null=True)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,blank=True,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,blank=True,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.MultiPolygonField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
-    agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    agent_collecteur=models.CharField(max_length=50,blank=True,null=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
-    
+
     class Meta:
-        verbose_name="Parking"
-        verbose_name_plural="Parkings"
+        verbose_name="Aire de stationnement"
+        #verbose_name_plural="Parkings"
 
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
 
-class PlanEau(models.Model):
+class AireRepos(Polyg_Lat_Lon,models.Model):
     nom = models.CharField(max_length=50)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    aire= models.FloatField(default=0)
+    commentaire=models.TextField(max_length=300,blank=True,null=True)
+    secteur=models.CharField(choices=CAMP)
+    image=models.ImageField(blank=True,null=True)
+    date_creation=models.DateField(blank=True,null=True)
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
+    geometrie=models.MultiPolygonField(srid=32631)
+    date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
+    agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
+    
+    def __str__(self):
+        return self.nom
+    
+    class Meta:
+        verbose_name="Aire de Repos"
+        verbose_name_plural="Aires de Repos"
+    def calcul_aire(self):
+        return self.geometrie.area
+    
+    def save(self, *args, **kwargs):
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
+        super().save(*args, **kwargs)
+
+class BassinEau(models.Model):
+    nom = models.CharField(max_length=50)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     aire= models.FloatField(default=0,null=True)
     lampadaire=models.BooleanField(default=True)
     date_creation=models.DateTimeField(blank=True, null=True)
-    precision=models.TextField(max_length=300,null=True,blank=True)
+    commentaire=models.TextField(max_length=300,null=True,blank=True)
     secteur=models.CharField(choices=CAMP)
     image=models.ImageField(blank=True,null=True)
-    zone=models.ForeignKey(Zone_UL,on_delete=models.SET_NULL,null=True) # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone=models.ForeignKey(Zone,on_delete=models.SET_NULL,null=True) # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.MultiPolygonField(srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
     
     class Meta:
-        verbose_name="Plan d'eau"
-        verbose_name_plural="Plans d'eaux"
+        verbose_name="Bassin d'Eau"
+        verbose_name_plural="Bassin d'Eaux"
 
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
 
 NIVO=(
-        ('RE', ('Rez-de-chaussé')),
-        ('N1', ('Niveau 1')),
-        ('N2', ('Niveau 2')),
-        ('N3', ('Niveau 3')),
-        ('N4', ('Niveau 4')),
-        ('N5', ('Niveau 5')),
-        ('N6', ('Niveau 6')),
-        ('N7', ('Niveau 7')),
-        ('N8', ('Niveau 8')),
+        ('Rez-de-chaussé', ('Rez-de-chaussé')),
+        ('Niveau 1', ('Niveau 1')),
+        ('Niveau 2', ('Niveau 2')),
+        ('Niveau 3', ('Niveau 3')),
+        ('Niveau 4', ('Niveau 4')),
+        ('Niveau 5', ('Niveau 5')),
+        ('Niveau 6', ('Niveau 6')),
+        ('Niveau 7', ('Niveau 7')),
+        ('Niveau 8', ('Niveau 8')),
     )
 BATRIO=(
-        ('INDUS', ('Materiaux industriels')),
-        ('ECOLO', ('Materiaux ecologique')),
+        ('Materiaux industriels', ('Materiaux industriels')),
+        ('Materiaux ecologique', ('Materiaux ecologique')),
     )
 AERA=(
-        ('VENT', ('Ventilation')),
-        ('CLIM', ('Climatisation')),
-        ('NUL', ('NEANT/Naturel')),
+        ('Ventilation', ('Ventilation')),
+        ('Climatisation', ('Climatisation')),
+        ('NEANT/Naturel', ('NEANT/Naturel')),
     )
 TOIT=(
-        ('AL', ('Dallé')),
-        ('TUL', ('TULLE')),
-        ('TOLA', ('Tôle Aluminium')),
-        ('TOLZ', ('Tôle zin 0.5')),
+        ('Dallé', ('Dallé')),
+        ('TULLE', ('TULLE')),
+        ('Tôle Aluminium', ('Tôle Aluminium')),
     )
 NATBAT=(
-        ('CHANT', ('En Chantier')),
-        ('ACHEV1', ('Achevé fonctionnel')),
-        ('ACHEV2', ('Achevé Non fonctionnel')),
+        ('En Chantier', ('En Chantier')),
+        ('Achevé fonctionnel', ('Achevé fonctionnel')),
+        ('Achevé Non fonctionnel', ('Achevé Non fonctionnel')),
     )
 CATEGORIES = [
     ("administratif", "Administratif"),
@@ -634,227 +744,265 @@ CATEGORIES = [
 ]
 
 TYPFORMA=(
-        ('PRO', ('Professionnelle')),
-        ('RECH', ('Recherche')),
+        ('Professionnelle', ('Professionnelle')),
+        ('Recherche', ('Recherche')),
+        ('Mixte', ('Mixte')),
     )
 DOFORMA=(
-        ('D1_POLY', ('Hybride/Polyvalent')),
-        ('D2_SAN', ('Santé')),
-        ('D3_ECO', ('Economie')),
-        ('D4_ENV', ('Environnement')),
-        ('D5_HS', ('Homme/Societé')),
-         ('D6_SPOR', ('Sport')),
-        ('D7_INFO', ('Informatique')),
-         ('D8_AGRO', ('Agronomie')),
-        ('D9_LANG', ('Langue')),
-         ('D10_COMM', ('Communication')),
-        ('D11_DROI', ('Droit/Politique')),
+        ('Hybride/Polyvalent', ('Hybride/Polyvalent')),
+        ('Santé', ('Santé')),
+        ('Economie', ('Economie')),
+        ('Homme/Societé', ('Homme/Societé')),
+         ('Sport', ('Sport')),
+        ('Informatique', ('Informatique')),
+         ('Agronomie', ('Agronomie')),
+        ('Langue et Art', ('Langue et Art')),
+         ('Communication', ('Communication')),
+        ('Droit/Politique', ('Droit/Politique')),
     )
 
 CHAIZ=(
-        ('BOI', ('Chaise Bois')),
-        ('PLAS', ('Chaise Plastique')),
-         ('FAUT', ('Chaise Fauteil')),
+        ('Chaise Bois', ('Chaise Bois')),
+        ('Chaise Plastique', ('Chaise Plastique')),
+         ('Chaise Fauteil', ('Chaise Fauteil')),
     )
-class Batiment(models.Model):
-    nom = models.CharField(max_length=60,null=True)
-    lat=models.FloatField(blank=True,null=True)
-    lon=models.FloatField(blank=True,null=True)
-    accuracy = models.FloatField(blank=True, null=True)
+class Batis(Polyg_Lat_Lon,models.Model):
+    nom= models.CharField(max_length=60,null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     aire= models.FloatField(default=0)
-    adresse= models.CharField(max_length=200,null=True)
+    commentaire= models.CharField(max_length=200,null=True)
     camerasurvaillance=models.BooleanField(default=False)
     extinteur=models.BooleanField(default=False)
     internet=models.BooleanField(default=False)
     renove=models.BooleanField(default=False)
     nature=models.CharField(choices=NATBAT) #faire un choice ou comment
-    aeration= models.CharField(max_length=10,choices=AERA,)
+    aeration= models.CharField(max_length=30,choices=AERA,)
     date_construi=models.DateField(blank=True,null=True)
     electricite=models.BooleanField(default=True)
     secteur=models.CharField(choices=CAMP,max_length=19)
     toilette=models.BooleanField(default=False)
-    toiture= models.CharField(max_length=100,choices=TOIT)
+    toiture= models.CharField(max_length=60,choices=TOIT)
     categorie = models.CharField(max_length=50, choices=CATEGORIES, null=True) #nouveaute
     nbre_niveau= models.CharField(choices=NIVO,null=True)
-    materiaux= models.CharField(max_length=10,choices=BATRIO,null=True)
+    materiaux= models.CharField(max_length=30,choices=BATRIO,null=True)
     image=models.ImageField(blank=True,null=True)
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,null=True)# CLEE # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.MultiPolygonField(srid=32631,blank=True,null=True)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-#class BatimentAdministratif(Batiment):
-    #batiment = models.OneToOneField(Batiment, on_delete=models.CASCADE, primary_key=True)
+#class BatimentAdministratif(Batis):
     nb_bureaux = models.PositiveIntegerField(default=0)
-    type_service= models.CharField(max_length=70,blank=True,null=True)################
+    type_service= models.CharField(max_length=50,blank=True,null=True)################
     heure_ouverture=models.TimeField(blank=True,null=True)
     heure_fermeture=models.TimeField(blank=True,null=True)
-#class BatimentPedagogique(Batiment):
+#class BatimentPedagogique(Batis):
     nb_salle = models.PositiveIntegerField(default=0,blank=True,null=True)
     nb_chaise = models.PositiveIntegerField(default=0,blank=True,null=True)
     type_banc=models.CharField(choices=CHAIZ, max_length=30,blank=True,null=True)####
     kit_informatique=models.BooleanField(default=False)
     type_formation=models.CharField(choices=TYPFORMA,max_length=30,blank=True,null=True)#########
     domaine_formation=models.CharField(choices=DOFORMA,max_length=30,blank=True,null=True)####
-#class BatimentAdminPedago(Batiment):
-    nb_salle = models.PositiveIntegerField(default=0)
-    nb_chaise = models.PositiveIntegerField(default=0)
-#class BatimentCommercial(Batiment):
+#class BatimentAdminPedago(Batis):
     nb_employe = models.PositiveIntegerField(default=0)
-    type_commerce= models.CharField(max_length=60,blank=True,null=True)
-#class BatimentResidentiel(Batiment):
+    #type_commerce= models.CharField(max_length=60,blank=True,null=True)
+#class BatimentResidentiel(Batis):
     nb_appartement = models.PositiveIntegerField(blank=True,null=True)
-    loyer_mensuale= models.FloatField(blank=True,null=True)
+    loyer_mensuel= models.FloatField(blank=True,null=True)
     lit=models.BooleanField(default=False)
     cuisine=models.BooleanField(default=False)
     eau=models.BooleanField(default=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     
     def __str__(self):
         return self.nom
     
     class Meta:
-        verbose_name="Batiment"
+        verbose_name="Batis"
         verbose_name_plural="Batiments"
 
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
-
 
 CAMERA=(
         ('RGB', ('RGB')),
-        ('IR', ('InfraRouge')),
+        ('InfraRouge', ('InfraRouge')),
     )
 class Camera(CodeLatLonGeom,models.Model):
     nom=models.CharField(max_length=50)
-    lat=models.FloatField(null=True,blank=True)
-    lon=models.FloatField(null=True,blank=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
     date_instal=models.DateField(null=True,blank=True)
     secteur=models.CharField(max_length=11,choices=CAMP)
-    type=models.CharField(max_length=5,choices=CAMERA)
+    type=models.CharField(max_length=30,choices=CAMERA)
     fonctionnel=models.BooleanField(default=True)
-    batiment=models.ForeignKey(Batiment,on_delete=models.SET_NULL,null=True,related_name="camera_bat")
-    parking=models.ForeignKey(Parking,on_delete=models.SET_NULL, null=True, related_name="camera_park")
-    zone = models.ForeignKey(Zone_UL, on_delete=models.SET_NULL,blank=True,null=True)# CLEE # CLEE
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL,null=True) # CLEE
+    batiment=models.ForeignKey(Batis,on_delete=models.SET_NULL,null=True,related_name="camera_bat")
+    parking=models.ForeignKey(AireStationnement,on_delete=models.SET_NULL, null=True, related_name="camera_park")
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL,blank=True,null=True)# CLEE # CLEE
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,null=True)
     geometrie=models.PointField(srid=32631)
     date_collecte=models.DateTimeField( auto_now_add=True, editable=False)
     agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
     def __str__(self):
         return self.nom
     class Meta:
         verbose_name="Camera"
         verbose_name_plural="Cameras"
 
+class Caniveau(models.Model):
+    nom = models.CharField(max_length=100)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    aire=models.DecimalField(max_digits=15, decimal_places=2,null=True)
+    rue=models.ForeignKey('Voirie',on_delete=models.SET_NULL,related_name="caniveau_rue", null=True)
+    largeur= models.FloatField(default=0)
+    longueur= models.FloatField(default=0)
+    profondueur= models.FloatField(default=0)
+    geometrie = models.MultiPolygonField(srid=32631)
+
+    def calcul_aire(self):
+        return self.geometrie.area
+
+    def save(self, *args, **kwargs):
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
+        super().save(*args, **kwargs)
 TYP_ROUT=(
-        ('B', ('Bitumé')),
-        ('P', ('Pavé')),
-        ('T', ('Non Révetue')),
+        ('Bitumé', ('Bitumé')),
+        ('Pavé et ciment', ('Pavé et ciment')),
+        ('Non Révetue', ('Non Révetue')),
+    )
+CAT_ROUT=(
+        ('circulation Petonne', ('circulation pietonne')),
+        ('circulation automobile', ('circulation automobile')),
+       
     )
 class Voirie(models.Model):
     nom = models.CharField(max_length=100)
-    lat=models.FloatField(blank=True)
-    lon=models.FloatField(blank=True)
-    date_construc=models.DateTimeField(blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6,null=True)
+    date_constru=models.DateTimeField(blank=True, null=True)
     largeur= models.FloatField(default=0)
     adresse = models.CharField(max_length=200)
+    aire=models.DecimalField(max_digits=15, decimal_places=2,null=True)
     longueur= models.FloatField(default=0)
-    Paneaux=models.BooleanField(default=True)
-    lampadaire=models.BooleanField(default=True)
-    limite=models.ForeignKey(Limite,on_delete=models.SET_NULL, null=True, related_name="voirie_limite") # CLEE
-    revetement= models.CharField(max_length=10,choices=TYP_ROUT)
+    Panneau=models.BooleanField(default=True)
+    lampe=models.BooleanField(default=True)
+    caniveau=models.BooleanField(default=True)
+    nature= models.CharField(max_length=30,choices=TYP_ROUT)
+    categorie= models.CharField(max_length=30,choices=CAT_ROUT)
+    limite=models.ForeignKey(LimiteGeographique,on_delete=models.PROTECT,default=1,null=True, related_name="voirie_limite") # CLEE
     geometrie = models.MultiPolygonField(null=True, srid=32631)
     date_collecte=models.DateTimeField(auto_now_add=True, editable=False)
-    agent_collecteur=models.CharField(max_length=50,blank=True, null=True)
-    info_modifier_le = models.DateTimeField(auto_now=True)
+    agent_collecteur=models.CharField(max_length=50,blank=True,null=True)
+    info_modifier_le = models.DateTimeField(auto_now=True,null=True)
 
     def __str__(self):
         return self.nom
     
-    class Meta:
-        verbose_name="Route"
-        verbose_name_plural="Routes"
-
     def calcul_aire(self):
         return self.geometrie.area
     
     def save(self, *args, **kwargs):
-        self.aire = self.calcul_aire()  # Met à jour l'aire en fonction de la géométrie
-        if self.geometrie.centroid:  # Vérifie si la géométrie a un point central
-            self.lon, self.lat = self.geometrie.centroid.x, self.geometrie.centroid.y
+        self.aire = self.calcul_aire()  
+        if self.geometrie.centroid: 
+            centre=self.geometrie.transform(4326, clone=True).centroid
+            self.longitude, self.latitude = centre.x, centre.y
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name="Route"
+        verbose_name_plural="Routes"
+
 ####################
 ##############
 from multiselectfield import MultiSelectField
 # LES ALERTES
-
 CHOICES = (
-        ('choix1', 'Climatisation'),
-        ('choix2', 'Vitilateur'),
-        ('choix3', 'Ampoule'),
-        ('choix3', 'Sonorisation'),
-        ('choix3', 'Table/Banc'),
+        ('Climatisation', 'Climatisation'),
+        ('Ventilateur', 'Ventilateur'),
+        ('Ampoule', 'Ampoule'),
+        ('Sonorisation', 'Sonorisation'),
+        ('Table/Banc', 'Table/Banc'),
     )
 
 class AlerteBatiment(models.Model):
-    disfonction=models.BooleanField(default=False)
+    disfonction=models.BooleanField(default=True)
     lesPennes= MultiSelectField(choices=CHOICES,max_length=300)
-    SOSMessage=models.TextField(max_length=300)
-    batiment=models.ForeignKey(Batiment,on_delete=models.SET_NULL,null=True)
+    SOSMessage=models.TextField(max_length=150)
+    batiment=models.ForeignKey(Batis,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Batis'
    
 class AlerteLampadaire(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
-    lampadaire=models.ForeignKey(Lampadaire,on_delete=models.SET_NULL,null=True)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
+    lampadaire=models.ForeignKey(Eclairage,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
-
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Lampe'
 class AlertePointEau(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
     point_eau=models.ForeignKey(PointEau,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Robinet'
 
 class AlerteWifi(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
-    wifi=models.ForeignKey(Telecomminication,on_delete=models.SET_NULL,null=True)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
+    wifi=models.ForeignKey(Telecommunication,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
-
-class AlertePoubelleFosse(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
-    poubellefosse=models.ForeignKey(Assainissement,on_delete=models.SET_NULL,null=True)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Wifi'
+class AlertePoubelle(models.Model):
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
+    poubelle=models.ForeignKey('Poubelle',on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Poubelle'
 
 class AlerteJardin(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
-    verdure=models.ForeignKey(EspaceVert,on_delete=models.SET_NULL,null=True)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
+    verdure=models.ForeignKey(TrameVerte,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Vert'
 
 class AlerteReposoir(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
     repos=models.ForeignKey(Reposoir,on_delete=models.SET_NULL,null=True)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Repos'
 
 class AlerteGenerale(models.Model):
-    disfonction=models.BooleanField(default=False)
-    SOSMessage=models.TextField(max_length=300)
+    disfonction=models.BooleanField(default=True)
+    SOSMessage=models.TextField(max_length=150)
     date_alerte=models.DateTimeField(auto_now_add=True, editable=False)
-    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,null=True,default=1)
+    auteur= models.ForeignKey(Profile,on_delete=models.SET_NULL,editable=False,null=True,default=1)
+    def __str__(self):
+        return 'alerte_'+ str(self.id)+ '_Campus'

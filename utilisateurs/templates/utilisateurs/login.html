@@ -1,13 +1,12 @@
 {%extends 'base.html'%}
 
-
 {% block content %}
 <form action="" method="POST">
     {% csrf_token %}
     <label for="username" > nom d'utilisateurs</label>
     <input class="form-control" type="text" id="username" name="username">
     <label for="password"> mot de passe</label>
-    <input class="form-control" type="password" id="password" name="password">
-   <input type="submit" value="se contecté" class="btn btn-primary">
-</form>
+    <input class="form-control" type="password" id="password" name="password"><br>
+   <input type="submit" value="se contecter" class="btn btn-primary">
+</form><br>
 {% endblock %}

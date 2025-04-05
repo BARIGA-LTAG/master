@@ -1,30 +1,52 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Géoinformatique - Mon Campus</title>
-   <!-- Utilisation de CDN pour Leaflet et Turf.js -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
-
-    <!-- JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.7/proj4.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Géoinformatique - Mon Campus</title>
+       <!-- Utilisation de CDN pour Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <!-- CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+        <!-- statistique -->
+        <!-- JavaScript -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.7/proj4.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </head>
 
 <style>
+    @media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: -250px; /* La largeur de votre sidebar */
+        width: 250px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .sidebar.active {
+        left: 0;
+    }
+}
+/* //FFFFFFFFFFFFFFFFFFFFFFFFFFFFF */
+
+.navbar-nav {
+    flex-direction: column;
+}
+
+.nav-link {
+    padding-left: 15px;
+}
+/* /YYYYYYYYYYYYYYYYYYYYYYYY */
     
 .navbar {
     background-color: rgb(252, 216, 140);
@@ -68,8 +90,9 @@
                         {% if user.is_authenticated %}
                             <a class="nav-link lk" href="{% url 'deconnection' %}">Se déconnecter</a>
                         {% endif %}
-                        <a class="nav-link" href="#"> Hello {{request.user.username}} ! </a>
-                        <a class="nav-link ltag1" href="#">LTAG</a>
+                        <a class="nav-link" href="#"> Bienvenu(e) <span style="color: rgb(1, 14, 1); font-weight: bold;">{{request.user.username}}</span> ! </a>
+                        <a class="nav-link ltag1" href="#" >profile: <span style="color: green; font-weight: bold;">{{ request.user.profile.type_profile }}</span></a>
+
                     </div>
                 </div>
             </div>
@@ -84,10 +107,11 @@
                       <li class="nav-item"><a class="nav-link" href="{% url 'UL:telecharger' %}">Jeux de Données</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'UL:analyse' %}">Analyse Spatiale </a></li> 
                       <li class="nav-item"><a class="nav-link" href="{% url 'UL:statistique' %}">Statistiques </a></li>
-                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:carte' %}">Cartes</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:carte' %}">Carte de Base</a></li>
+                      <li class="nav-item"><a class="nav-link" href="#">Cartes Thématiques</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'UL:collecte' %}">Collecter</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'UL:alerte' %}"> Alerter </a></li>
-                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:map' %}">Géorecherche</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:map' %}">Navivation</a></li>
                   </ul>
               </div>
           </nav>
@@ -101,7 +125,18 @@
    </div>
 
     <footer class="bg-dark text-white text-center py-3">
-        <p>&copy; 2023 LTG-SI. Tous droits réservés.</p>
+        <p>&copy; 2024 LTAG. Tous droits réservés. <br>Université de Lomé/Laboratoire de Télédetection Appliquée et de Géoinformatique</p>
+
     </footer>
+
+    <script>
+        $(document).ready(function() {
+            $('.navbar-toggler').click(function() {
+                $('.sidebar').toggleClass('active');
+            });
+        });
+    </script>
+    
+
 </body>
 </html>

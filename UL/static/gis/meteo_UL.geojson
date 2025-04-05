@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::32631" } },
+"features": [
+{ "type": "Feature", "properties": { "nom": "station météo", "longitude": 1.210799, "latitude": 6.175379, "fonctionnel": true, "secteur": null, "type": null, "image": null, "date_creation": null, "zone": null, "limite": null, "date_collecte": "2024-02-29 22:40:47", "agent_collecteur": null, "info_modifier_le": "2024-02-29 22:40:47" }, "geometry": { "type": "Point", "coordinates": [ 302022.660794396419078, 682923.999699011212215 ] } },
+{ "type": "Feature", "properties": { "nom": "station météo", "longitude": 1.215312, "latitude": 6.176524, "fonctionnel": true, "secteur": null, "type": null, "image": null, "date_creation": null, "zone": null, "limite": null, "date_collecte": "2024-02-29 22:40:48", "agent_collecteur": null, "info_modifier_le": "2024-02-29 22:40:48" }, "geometry": { "type": "Point", "coordinates": [ 302522.673096471116878, 683048.932946325745434 ] } },
+{ "type": "Feature", "properties": { "nom": "station météo", "longitude": 1.214966, "latitude": 6.173715, "fonctionnel": true, "secteur": null, "type": null, "image": null, "date_creation": null, "zone": null, "limite": null, "date_collecte": "2024-02-29 22:40:48", "agent_collecteur": null, "info_modifier_le": "2024-02-29 22:40:48" }, "geometry": { "type": "Point", "coordinates": [ 302483.286718026327435, 682738.418180078151636 ] } }
+]
+}

@@ -1,0 +1,352 @@
+
+<h4 class="mb-4 text-center" >les statistiques </h4>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 border border border-right">
+            <h3>Télécharger au format csv</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_csv1' %}" download="zone_ul.csv">Télécharger zone_ul.csv</a>
+        </div>
+        <div class="col-md-4 border border border-right">
+            <h3>Télécharger au format geojson</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_json1' %}" download="zone_ul.geojson">Télécharger zone_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <h3>Télécharger au format geopackage</h3>
+            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
+            <a href="{% url 'UL:telecharger_gpkg1' %}" download="zone_ul.gpkg">Télécharger zone_ul.gpkg</a>
+        </div>
+    </div>
+
+    Ajoutez une ligne entre les deux rangées
+    <!-- <div class="row border-bottom mb-3"></div>
+
+    <div class="row">
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_csv2' %}" download="cloture_ul.csv">Télécharger cloture_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_json2' %}" download="cloture_ul.geojson">Télécharger cloture_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_gpkg2' %}" download="cloture_ul.gpkg">Télécharger cloture_ul.gpkg</a>
+        </div>
+    </div>
+
+    <!-- Ajoutez une ligne entre les deux rangées -->
+    <!-- <div class="row border-bottom mb-3"></div>
+    <div class="row">
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_csv3' %}" download="limite_ul.csv">Télécharger limite_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_json3' %}" download="limite_ul.geojson">Télécharger limite_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_gpkg3' %}" download="limite_ul.gpkg">Télécharger limite_ul.gpkg</a>
+        </div>
+    </div> -->
+
+    <!-- Ajoutez une ligne entre les deux rangées -->
+    <!-- <div class="row border-bottom mb-3"></div>
+    <div class="row">
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_csv4' %}" download="fosse_septique_ul.csv">Télécharger fosse_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_json4' %}" download="fosse_septique_ul.geojson">Télécharger fosse_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_gpkg4' %}" download="fosse_septique_ul.gpkg">Télécharger fosse_ul.gpkg</a>
+        </div>
+    </div>
+
+    <!-- Ajoutez une ligne entre les deux rangées -->
+    <div class="row border-bottom mb-3"></div>
+    <div class="row">
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_csv5' %}" download="poubelle_ul.csv">Télécharger boubelle_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_json5' %}" download="poubelle_ul.geojson">Télécharger boubelle_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_gpkg5' %}" download="poubelle_ul.gpkg">Télécharger boubelle_ul.gpkg</a>
+        </div>
+    </div>
+    <!-- Ajoutez une ligne entre les deux rangées -->
+    <div class="row border-bottom mb-3"></div>
+    <div class="row">
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_csv6' %}" download="passerelle_ul.csv">Télécharger passerelle_ul.csv</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_json6' %}" download="passerelle_ul.geojson">Télécharger passerelle_ul.geojson</a>
+        </div>
+        <div class="col-md-4 border">
+            <a href="{% url 'UL:telecharger_gpkg6' %}" download="passerelle_ul.gpkg">Télécharger passerelle_ul.gpkg</a>
+        </div>
+    </div>
+     <!-- Ajoutez une ligne entre les deux rangées -->
+     <div class="row border-bottom mb-3"></div>
+     <div class="row">
+         <div class="col-md-4 border">
+             <a href="{% url 'UL:telecharger_csv7' %}" download="kiosque_ul.csv">Télécharger kiosque_ul.csv</a>
+         </div>
+         <div class="col-md-4 border">
+             <a href="{% url 'UL:telecharger_json7' %}" download="kiosque_ul.geojson">Télécharger kiosque_ul.geojson</a>
+         </div>
+         <div class="col-md-4 border">
+             <a href="{% url 'UL:telecharger_gpkg7' %}" download="kiosque_ul.gpkg">Télécharger kiosque_ul.gpkg</a>
+         </div>
+     </div>
+
+      <!-- Ajoutez une ligne entre les deux rangées -->
+      <div class="row border-bottom mb-3"></div>
+      <div class="row">
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_csv8' %}" download="toilette_ul.csv">Télécharger toilette_ul.csv</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_json8' %}" download="toilette_ul.geojson">Télécharger toilette_ul.geojson</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_gpkg8' %}" download="toilette_ul.gpkg">Télécharger toilette_ul.gpkg</a>
+          </div>
+      </div>
+
+      <!-- Ajoutez une ligne entre les deux rangées -->
+      <div class="row border-bottom mb-3"></div>
+      <div class="row">
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_csv9' %}" download="eclairage_ul.csv">Télécharger eclairage_ul.csv</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_json9' %}" download="eclairage_ul.geojson">Télécharger eclairage_ul.geojson</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_gpkg9' %}" download="eclairage_ul.gpkg">Télécharger eclairage_ul.gpkg</a>
+          </div>
+      </div>
+
+      <!-- Ajoutez une ligne entre les deux rangées -->
+      <div class="row border-bottom mb-3"></div>
+      <div class="row">
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_csv10' %}" download="panneau_ul.csv">Télécharger panneau_ul.csv</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_json10' %}" download="panneau_ul.geojson">Télécharger panneau_ul.geojson</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_gpkg10' %}" download="panneau_ul.gpkg">Télécharger panneau_ul.gpkg</a>
+          </div>
+      </div>
+
+      <!-- Ajoutez une ligne entre les deux rangées -->
+      <div class="row border-bottom mb-3"></div>
+      <div class="row">
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_csv11' %}" download="point_eau_ul.csv">Télécharger point_eau_ul.csv</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_json11' %}" download="point_eau_ul.geojson">Télécharger point_eau_ul.geojson</a>
+          </div>
+          <div class="col-md-4 border">
+              <a href="{% url 'UL:telecharger_gpkg11' %}" download="point_eau_ul.gpkg">Télécharger point_eau_ul.gpkg</a>
+          </div>
+      </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv12' %}" download="reposoir_ul.csv">Télécharger reposoir_ul.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json12' %}" download="reposoir_ul.geojson">Télécharger reposoir_ul.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg12' %}" download="reposoir_ul.gpkg">Télécharger reposoir_ul.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv13' %}" download="telecom.csv">Télécharger telecom.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json13' %}" download="telecom.geojson">Télécharger telecom.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg13' %}" download="telecom.gpkg">Télécharger telecom.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv14' %}" download="meteo_ul.csv">Télécharger meteo_ul.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json14' %}" download="meteo_ul.geojson">Télécharger meteo_ul.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg14' %}" download="meteo_ul.gpkg">Télécharger meteo_ul.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv15' %}" download="arbre_i_ul.csv">Télécharger arbre_isole_ul.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json15' %}" download="arbre_i_ul.geojson">Télécharger arbre_isole_ul.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg15' %}" download="arbre_i_ul.gpkg">Télécharger arbre_isole_ul.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv16' %}" download="aire_loisir_ul.csv">Télécharger aire_loisir_ul.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json16' %}" download="aire_loisir_ul.geojson">Télécharger aire_loisir_ul.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg16' %}" download="aire_loisir_ul.gpkg">Télécharger aire_loisir_ul.gpkg</a>
+            </div>
+        </div>
+
+         <!-- Ajoutez une ligne entre les deux rangées -->
+         <div class="row border-bottom mb-3"></div>
+         <div class="row">
+             <div class="col-md-4 border">
+                 <a href="{% url 'UL:telecharger_csv17' %}" download="trame_verte.csv">Télécharger trame_verte.csv</a>
+             </div>
+             <div class="col-md-4 border">
+                 <a href="{% url 'UL:telecharger_json17' %}" download="trame_verte.geojson">Télécharger trame_verte.geojson</a>
+             </div>
+             <div class="col-md-4 border">
+                 <a href="{% url 'UL:telecharger_gpkg17' %}" download="trame_verte.gpkg">Télécharger trame_verte.gpkg</a>
+             </div>
+         </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv18' %}" download="arbre_reboise_ul.csv">Télécharger arbre_reboise_ul.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json18' %}" download="arbre_reboise_ul.geojson">Télécharger arbre_reboise_ul.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg18' %}" download="arbre_reboise_ul.gpkg">Télécharger arbre_reboise_ul.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv19' %}" download="aire_station.csv">Télécharger aire_station.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json19' %}" download="aire_station.geojson">Télécharger aire_station.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg19' %}" download="aire_station.gpkg">Télécharger aire_station.gpkg</a>
+            </div>
+        </div>
+
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv20' %}" download="aire_repos.csv">Télécharger aire_repos.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json20' %}" download="aire_repos.geojson">Télécharger aire_repos.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg20' %}" download="aire_repos.gpkg">Télécharger aire_repos.gpkg</a>
+            </div>
+        </div>
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv21' %}" download="bassin.csv">Télécharger bassin.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json21' %}" download="bassin.geojson">Télécharger bassin.geojson</a>
+            </div>
+            <div class="col-md-4 border"> -->
+                <a href="{% url 'UL:telecharger_gpkg21' %}" download="bassin.gpkg">Télécharger bassin.gpkg</a>
+            </div>
+        </div>
+
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv22' %}" download="camera.csv">Télécharger camera.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json22' %}" download="camera.geojson">Télécharger camera.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg22' %}" download="camera.gpkg">Télécharger camera.gpkg</a>
+            </div>
+        </div>
+
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv23' %}" download="caniveau.csv">Télécharger caniveau.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json23' %}" download="caniveau.geojson">Télécharger caniveau.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg23' %}" download="caniveau.gpkg">Télécharger caniveau.gpkg</a>
+            </div>
+        </div>
+    
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv24' %}" download="voirie.csv">Télécharger voirie.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json24' %}" download="voirie.geojson">Télécharger voirie.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg24' %}" download="voirie.gpkg">Télécharger voirie.gpkg</a>
+            </div>
+        </div>
+            
+        <!-- Ajoutez une ligne entre les deux rangées -->
+        <div class="row border-bottom mb-3"></div>
+        <div class="row">
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_csv25' %}" download="batis.csv">Télécharger batis.csv</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_json25' %}" download="batis.geojson">Télécharger batis.geojson</a>
+            </div>
+            <div class="col-md-4 border">
+                <a href="{% url 'UL:telecharger_gpkg25' %}" download="batis.gpkg">Télécharger batis.gpkg</a>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Géoinformatique - Mon Campus</title>
+    <!-- Utilisation de CDN pour Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.7/proj4.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<style>
+    /* Styles pour la sidebar en mode responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 56px; /* ajustez cette valeur en fonction de la hauteur de votre header */
+            bottom: 0;
+            left: -250px; /* La largeur de votre sidebar */
+            width: 250px;
+            overflow-y: auto;
+            background-color: #faf8f8;
+            transition: all 0.3s;
+            z-index: 1000; /* Assurez-vous qu'elle est au-dessus des autres contenus mais en dessous du header */
+        }
+        .sidebar.active {
+            left: 0;
+        }
+    }
+
+       /* Styles globaux */
+       .navbar-nav {
+        flex-direction: column;
+    }
+
+    .nav-link {
+        padding-left: 15px;
+    }
+
+    .navbar {
+        background-color: rgb(252, 216, 140);
+    }
+    .barigaback {
+        background-color: rgb(255, 255, 255);
+        border-radius: 3pt;
+    }
+
+    .tachesag {
+        background-color: rgb(250, 188, 53);
+    }
+
+    .nav-link {
+        color:black;
+    }
+
+    .lk {
+        color: rgb(235, 76, 14);
+    }
+</style>
+
+
+<body>
+    <header class="bg-info text-white text-center py-2">
+        <h1 class="mb-2">MON CAMPUS</h1>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container">
+                <a class="navbar-brand" href="#">UNIVERSITE DE LOME</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                    <button class="btn btn-primary d-md-none" type="button" data-toggle="sidebar">Menu</button>
+
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div class="navbar-nav ml-auto">
+                        <a class="nav-link lk" href="{% url 'accueil' %}">Accueil</a>
+                        <a class="nav-link lk" href="{% url 'register' %}">S'inscrire</a>
+                        <a class="nav-link lk" href="{% url 'connection' %}">Se connecter</a>
+                        {% if user.is_authenticated %}
+                            <a class="nav-link lk" href="{% url 'deconnection' %}">Se déconnecter</a>
+                        {% endif %}
+                        <a class="nav-link" href="#"> Bienvenu(e) <span style="color: rgb(1, 14, 1); font-weight: bold;">{{request.user.username}}</span> ! </a>
+                        <a class="nav-link ltag1" href="#" >profile: <span style="color: green; font-weight: bold;">{{ request.user.profile.type_profile }}</span></a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-block bg-light sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                      <li class="nav-item"><a class="nav-link active" href="{% url 'admin:index' %}">Administration</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:telecharger' %}">Jeux de Données</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:analyse' %}">Analyse Spatiale </a></li> 
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:statistique' %}">Statistiques </a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:carte' %}">Carte de Base</a></li>
+                      <li class="nav-item"><a class="nav-link" href="#">Cartes Thématiques</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:collecte' %}">Collecter</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:alerte' %}"> Alerter </a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'UL:map' %}">Navivation</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 LTAG. Tous droits réservés. <br>Université de Lomé/Laboratoire de Télédetection Appliquée et de Géoinformatique</p>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+        $('.navbar-toggler, [data-toggle="sidebar"]').click(function() {
+            if ($(window).width() < 768) {
+                $('.sidebar').toggleClass('active');
+            }
+        });
+    });
+
+    </script>
+</body>
+</html>

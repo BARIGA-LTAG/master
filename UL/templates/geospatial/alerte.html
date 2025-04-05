@@ -1,48 +1,56 @@
 {% extends 'base.html' %}
-
+{% load crispy_forms_tags %}
 {% block content %}
+<style>
+    .card-body {
+        max-height: 400px; /* Ajustez en fonction de vos besoins */
+        overflow-y: auto; /* Active le défilement vertical si nécessaire */
+    }
+</style>
+
 <div class="container">
+    <!-- Utilisez la classe "mb-3" ou "mb-4" pour ajouter une marge au bas sur les petits écrans -->
     <div class="row card-body">
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form1')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form1')">
                 <i class="fas fa-building"></i> Alerte Batiment
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form2')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form2')">
                 <i class="fas fa-lightbulb"></i> Alerte Lampadaire
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form3')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form3')">
                 <i class="fas fa-tint"></i> Alerte Point d'eau
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form4')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form4')">
                 <i class="fas fa-wifi"></i> Alerte Point Wifi
             </button>
         </div>
     </div>
     
     <div class="row card-body">
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form5')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form5')">
                 <i class="fas fa-trash-alt"></i> Alerte Poubelle
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form6')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form6')">
                 <i class="fas fa-bed"></i> Alerte Reposoir
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form7')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form7')">
                 <i class="fas fa-tree"></i> Alerte Jardin
             </button>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-primary" onclick="openForm('form8')">
+        <div class="col-6 col-md-3 mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="openForm('form8')">
                 <i class="fas fa-exclamation-triangle"></i> Alerte Générale
             </button>
         </div>
@@ -58,7 +66,7 @@
                     <h4 class="card-title"> Batiment</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form1 }}
+                        {{form1|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form1">Envoyer</button>
                     </form>
                 </div>
@@ -72,7 +80,7 @@
                     <h4 class="card-title">Lampadaire</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form2 }}
+                        {{form2|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form2">Envoyer</button>
                     </form>
                 </div>
@@ -86,7 +94,7 @@
                     <h4 class="card-title">Robinet d'eau</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form3 }}
+                        {{form3|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form3">Envoyer</button>
                     </form>
                 </div>
@@ -100,7 +108,7 @@
                     <h4 class="card-title">Point Wifi</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form4 }}
+                        {{form4|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form4">Envoyer</button>
                     </form>
                 </div>
@@ -111,10 +119,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Poubelle/Fosse septique </h4>
+                    <h4 class="card-title">Poubelle </h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form5 }}
+                        {{form5|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form5">Envoyer</button>
                     </form>
                 </div>
@@ -128,7 +136,7 @@
                     <h4 class="card-title">Reposoir</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form6 }}
+                        {{form6|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form6">Envoyer</button>
                     </form>
                 </div>
@@ -142,7 +150,7 @@
                     <h4 class="card-title">Jardin</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form7 }}
+                        {{form7|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form7">Envoyer</button>
                     </form>
                 </div>
@@ -156,7 +164,7 @@
                     <h4 class="card-title">Alerte Générale</h4>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ form8 }}
+                        {{form8|crispy}}
                         <button type="submit" class="btn btn-primary" name="submit_form8">Envoyer</button>
                     </form>
                 </div>
@@ -205,6 +213,8 @@ document.addEventListener('DOMContentLoaded', function () {
         openForm(currentFormId);
     }
 });
+
+document.querySelector('form').reset();
 
 </script>
 

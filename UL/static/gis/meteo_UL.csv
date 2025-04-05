@@ -1,0 +1,4 @@
+nom,longitude,latitude,fonctionnel,secteur,type,image,date_creation,zone,limite,date_collecte,agent_collecteur,info_modifier_le,geometry
+station météo,1.210799,6.175379,True,,,,,,,2024-02-29 22:40:47,,2024-02-29 22:40:47,POINT (302022.6607943964 682923.9996990112)
+station météo,1.215312,6.176524,True,,,,,,,2024-02-29 22:40:48,,2024-02-29 22:40:48,POINT (302522.6730964711 683048.9329463257)
+station météo,1.214966,6.173715,True,,,,,,,2024-02-29 22:40:48,,2024-02-29 22:40:48,POINT (302483.2867180263 682738.4181800782)

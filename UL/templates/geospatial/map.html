@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
-
+{% load crispy_forms_tags %}
 {% block content %}
 <div class="container mt-4">
-    <h4 class="mb-4">UL Mapping</h4>
+    <h4 class="mb-4 text-center" >Recherche des points d'intérêts et Navigation </h4>
 
     <div class="row">
         <div class="col-md-6 mb-4">
             <div id="map" style="width: 100%; height: 400px;"></div>
             <p class="bg-danger text-white p-2 mt-2">Assurez-vous d'avoir une bonne précision, car les résultats sont fournis par rapport à votre position.</p>
             <p class="mb-4">L'infrastructure la plus proche est la première à s'afficher pour chaque catégorie.</p>
-        </div>
-        <div class="col-md-6">
+        
+            
             <form method="get" class="mb-3">
                 {% csrf_token %}
-                {{ form }}
-                <button type="submit" class="btn btn-primary">Recherche</button>
+                {{form|crispy}}
+                <button type="submit" class="btn btn-primary">Recherche</button> <br> <hr>
             </form>
     
             <!-- Partager ma position -->
@@ -28,32 +28,71 @@
                 <button onclick="confirmCoordinates()" class="btn btn-primary">Oui</button>
                 <button onclick="cancelCoordinates()" class="btn btn-danger">Annuler</button>
             </div>
+           
+        </div>
+        <div class="col-md-6 mb-4">
+            <h5 class="mt-4">Résultat pour Bâtiment</h5>
+            {% for result in results1 %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ result.nom }}</h6>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_str }}, {{ result.get_lon_as_str }})">Aller à la position</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">Aucun résultat.</p>
+            {% endfor %} 
+
+            <h5>Résultat Aire de Repos</h5>
+            {% for result in results2 %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ result.nom }}</h6>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_str }}, {{ result.get_lon_as_str }})">Aller à la position</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">Aucun résultat.</p>
+            {% endfor %}
+
+            <h5>Résultat pour Robinet d'eau</h5>
+            {% for result in results3 %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ result.nom }}</h6>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">Aucun résultat.</p>
+            {% endfor %}
+
+            <h5>Résultat pour Toilette Isolé</h5>
+            {% for result in results4 %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ result.nom }}</h6>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">Aucun résultat.</p>
+            {% endfor %}
+
+            <h5>Résultat pour Poubelle</h5>
+            {% for result in results5 %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ result.nom }}</h6>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">Aucun résultat.</p>
+            {% endfor %}
         </div>
     </div>
     
-    <h2 class="mt-4">Résultats de la Classe 1</h2>
-    {% for result in results1 %}
-        {{ result.nom }}
-    {% empty %}
-        <p class="text-muted">Aucun résultat.</p>
-    {% endfor %} 
-
-    <h2>Résultats de la Classe 2</h2>
-    {% for result in results2 %}
-        <div class="mb-3">
-            <p class="mb-0">{{ result.nom }}</p>
-            <a href="#" class="btn btn-primary btn-sm" onclick="goToLocation({{ result.get_lat_as_string }}, {{ result.get_lon_as_string }})">Aller à la position</a>
-        </div>
-    {% empty %}
-        <p class="text-muted">Aucun résultat.</p>
-    {% endfor %}
- 
-    <h2>Résultats de la Classe 3</h2>
-    {% for result in results3 %}
-        <p class="mb-0">{{ result.nom }}</p>  
-    {% empty %}
-        <p class="text-muted">Aucun résultat.</p>
-    {% endfor %}
 </div>
    
     <script>
@@ -116,7 +155,7 @@
     
 
      <script>
-        {% for result in results2 %}
+        {% for result in results5 %}
             var lat = {{ result.get_lat_as_string }};
             var lon = {{ result.get_lon_as_string }};
             L.marker([lat, lon]).addTo(map)
@@ -125,11 +164,15 @@
                 .openPopup();
         {% endfor %}
 
-        // fonction pour aller vers l'infrastricure en questions
-        function goToLocation(lt, ln) {
-        const url = `https://maps.google.com/maps?q=${lt},${ln}`;
-        window.open(url, '_blank');
-        }
+        {% for result in results4 %}
+            var lat = {{ result.get_lat_as_string }};
+            var lon = {{ result.get_lon_as_string }};
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("{{ result.nom }}")
+                .bindTooltip("{{ result.nom }}")
+                .openPopup();
+        {% endfor %}
+
 
         {% for result in results3 %}
         var lat = {{ result.get_lat_as_string }};
@@ -139,6 +182,40 @@
             .bindTooltip("{{ result.nom }}")
             .openPopup();
         {% endfor %}
+
+        {% for result in results2 %}
+            var lat = {{ result.get_lat_as_str }};
+            var lon = {{ result.get_lon_as_str }};
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("{{ result.nom }}")
+                .bindTooltip("{{ result.nom }}")
+                .openPopup();
+        {% endfor %}
+
+        {% for result in results1 %}
+            var lat = {{ result.get_lat_as_str }};
+            var lon = {{ result.get_lon_as_str }};
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("{{ result.nom }}")
+                .bindTooltip("{{ result.nom }}")
+                .openPopup();
+        {% endfor %}
+
+
+        function goToLocation(lat, lon) {
+            const currentLat = document.getElementById('id_lat').value; // Latitude actuelle de l'utilisateur
+            const currentLon = document.getElementById('id_lon').value; // Longitude actuelle de l'utilisateur
+
+            if (currentLat && currentLon) {
+                // Construit l'URL pour l'itinéraire entre la position actuelle et la destination
+                const url = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLon}&destination=${lat},${lon}&travelmode=driving`;
+                window.open(url, '_blank');
+            } else {
+                // Demander à l'utilisateur de saisir son point de départ ou activer la géolocalisation
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+                window.open(url, '_blank');
+            }
+        }
     </script>
 
     <script>

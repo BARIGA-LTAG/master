@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h3 class="text-center">Analyse spatiale</h3>
-    
+   
+    <div style="text-align: center;"><h5>Analyse spatiale</h5></div>
     <div class="container">
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Visualisez </h5>
-                        <p class="card-text">Quelque operations d'analyse deja faites.
-                            profitez deja en analysant les relation enntre les differents objets ainsi que leurs repartition dans l'espace du campus UL
+                        <p class="card-text">la carte de densité des points d'eaux.
+                            Ceci est une représentation de la distribution géographique des points d'eaux sur le campus.
                         </p>
                         <a href="{% url 'UL:analyse1' %}" class="btn btn-primary">Ouvrir</a>
                     </div>
@@ -20,14 +20,40 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">analusez et visualisez</h5>
-                        <p class="card-text">Faites des analyses spatiles par des algorithmes disponible.
-                            ce sont des algorithmes basics mais tres puisantes et utile si lon sait les utiliser pour extraires des informations
+                        <h5 class="card-title">visualisez</h5>
+                        <p class="card-text">Faites une analyses spatile de cette carte.
+                            distribution des poubelles
                         </p>
                         <a href="{% url 'UL:analyse2' %}" class="btn btn-primary">Ouvrir</a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Visualisez </h5>
+                        <p class="card-text">  
+                           Annalysez et commentez la couverture spatiale du reseau wifi public de l'université
+                        </p>
+                        <a href="{% url 'UL:analyse3' %}" class="btn btn-primary">Ouvrir</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">visualisez</h5>
+                        <p class="card-text">Apréciez le sens du drainage de l'eau de ruisselement dans les caniveaux 
+                        </p>
+                        <a href="{% url 'UL:analyse4' %}" class="btn btn-primary">Ouvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><br><br>
 {% endblock %}

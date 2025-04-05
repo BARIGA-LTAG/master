@@ -1,28 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div id="map" style="height: 500px; width: 70%; float: left;"></div>
-
-    <div id="sidebar" style="height: 500px; width: 30%; float: left; padding: 10px;">
-        <!-- Zone pour les opérations d'analyse spatiale -->
-        <h2>Opérations d'Analyse Spatiale</h2>
-        <label for="operation">Choisissez une opération :</label>
-        <select id="operation">
-            <option value="buffer">Tampon</option>
-            <option value="center">Centre</option>
-            <option value="centerOfMass">Centre de Masse</option>
-            <option value="centroid">Centroïde</option>
-            <!-- Ajoutez d'autres opérations au besoin -->
-        </select>
-
-        <label for="layer">Choisissez une couche :</label>
-        <select id="layer">
-            <!-- Remplissez dynamiquement cette liste avec les couches disponibles depuis Django -->
-        </select>
-
-        <button onclick="performSpatialAnalysis()">Effectuer l'analyse spatiale</button>
+<div style="text-align: center;"><h5>Analyse spatiale</h5></div>
+<div class="container">
+    <div class="row m-2 p-2">
+        <div class="col col-md-12">
+            {{analyse_html2|safe}}
+        </div>
     </div>
-
-    <script src="static/java_turf.js"></script>
+</div>
 
 
 {% endblock %}

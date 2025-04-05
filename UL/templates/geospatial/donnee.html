@@ -1,23 +1,67 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-4 border">
-            <h3>Télécharger au format csv</h3>
-            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
-            <a href="{% url 'UL:telecharger_csv' %}" download="zone_ul.csv">Télécharger zone_ul.csv</a>
-        </div>
-        <div class="col-md-4 border">
-            <h3>Télécharger au format geojson</h3>
-            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
-            <a href="{% url 'UL:telecharger_json' %}" download="zone_ul.geojson">Télécharger zone_ul.geojson</a>
-        </div>
-        <div class="col-md-4 border">
-            <h3>Télécharger au format geopackage</h3>
-            <p>Cliquez sur le lien ci-dessous pour télécharger le fichier :</p>
-            <a href="{% url 'UL:telecharger_gpkg' %}" download="zone_ul.gpkg">Télécharger zone_ul.gpkg</a>
-        </div>
+<div class="container mt-4">
+    <h3 class="mb-4 text-center text-md-left">Données téléchargeables aux formats suivants</h3>
+    
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>CSV</th>
+                    <th>GeoJSON</th>
+                    <th>GeoPackage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in page_obj %}
+                    <tr>
+                        {% for item in group %}
+                            <td>
+                                <strong>{{ item.nom }}</strong>: 
+                                <a href="{% url item.nom_url %}">Télécharger</a>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo; Première</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">Précédente</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <a class="page-link" href="#">
+                    Page {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </a>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">Suivante</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">Dernière &raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}
